@@ -700,7 +700,7 @@ async function fetchLiveData(){
       .eq('source', 'strava').gte('start_date', actCutoff).order('start_date', { ascending: true }),
     sb.from('whoop_cycles').select('external_id,start_at,strain').gte('start_at', actCutoff).order('start_at', { ascending: true }),
     sb.from('whoop_sleep')
-      .select('start_at,sleep_performance_percentage,stage_summary:raw->>stage_summary')
+      .select('start_at,sleep_performance_percentage,stage_summary:raw->score->>stage_summary')
       .gte('start_at', actCutoff).order('start_at', { ascending: true }),
   ]);
 
