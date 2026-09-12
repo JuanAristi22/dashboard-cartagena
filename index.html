@@ -65,6 +65,13 @@
   .theme-toggle .icon-sun{ display:none; }
   html[data-theme="light"] .theme-toggle .icon-moon{ display:none; }
   html[data-theme="light"] .theme-toggle .icon-sun{ display:block; }
+  .header-actions{ display:flex; gap:8px; flex-shrink:0; }
+  #sync-button.is-syncing #sync-icon{ animation:sync-spin 0.9s linear infinite; }
+  #sync-button:disabled{ opacity:0.6; cursor:default; }
+  @keyframes sync-spin{ to{ transform:rotate(360deg); } }
+  .sync-status{ font-size:12px; color:var(--muted); margin:-10px 0 14px; min-height:16px; }
+  .sync-status.is-error{ color:var(--red); }
+  .sync-status.is-ok{ color:var(--green); }
   .titlegroup h1{
     font-family:'Barlow Condensed',sans-serif;
     font-weight:800;
@@ -444,11 +451,17 @@
         <div class="rp-total">Goal: 4:28:00</div>
       </div>
     </div>
-    <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark">
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
-    </button>
+    <div class="header-actions">
+      <button class="theme-toggle" id="sync-button" title="Sync Strava &amp; Whoop now">
+        <svg id="sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+      </button>
+    </div>
   </header>
+  <div id="sync-status" class="sync-status"></div>
 
   <div id="view-dashboard">
 
@@ -1088,6 +1101,53 @@ document.getElementById('theme-toggle').addEventListener('click', ()=>{
   const isLight = html.getAttribute('data-theme') === 'light';
   html.setAttribute('data-theme', isLight ? 'dark' : 'light');
 });
+
+// ================== MANUAL SYNC ==================
+(function(){
+  const btn = document.getElementById('sync-button');
+  const status = document.getElementById('sync-status');
+
+  function setStatus(text, cls){
+    status.textContent = text;
+    status.className = 'sync-status' + (cls ? ' ' + cls : '');
+  }
+
+  function showLastSynced(){
+    let saved;
+    try { saved = localStorage.getItem('lastSyncedAt'); } catch(e) {}
+    if (saved) setStatus('Última sincronización: ' + new Date(saved).toLocaleString());
+  }
+  showLastSynced();
+
+  btn.addEventListener('click', async ()=>{
+    btn.disabled = true;
+    btn.classList.add('is-syncing');
+    setStatus('Sincronizando Strava y Whoop…');
+    try {
+      const res = await fetch('/api/trigger-sync');
+      const data = await res.json();
+      if (!res.ok && res.status !== 207) throw new Error(data.error || 'Sync failed');
+
+      const parts = [];
+      if (data.strava) parts.push(`Strava: ${data.strava.upserted} actividades`);
+      if (data.pmc && data.pmc.latest) parts.push(`Fitness ${data.pmc.latest.ctl} · Forma ${data.pmc.latest.tsb}`);
+      if (data.whoop) parts.push(`Whoop: ${data.whoop.recovery} recovery`);
+
+      if (data.errors && data.errors.length){
+        const failed = data.errors.map(e => e.step).join(', ');
+        setStatus(`Parcial — falló: ${failed}. ${parts.join(' · ')}`, 'is-error');
+      } else {
+        setStatus(`Listo — ${parts.join(' · ')}`, 'is-ok');
+        try { localStorage.setItem('lastSyncedAt', new Date().toISOString()); } catch(e) {}
+      }
+    } catch (err) {
+      setStatus('Error al sincronizar: ' + err.message, 'is-error');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('is-syncing');
+    }
+  });
+})();
 
 document.getElementById('nav-toggle').addEventListener('click', (e)=>{
   e.stopPropagation();

@@ -1,15 +1,9 @@
 import { getSupabaseAdmin } from './_lib/supabase.js';
 import { runFullSync } from './_lib/full-sync.js';
-import { checkSyncAuth } from './_lib/auth.js';
 
-// The secret-gated entry point: Vercel's cron jobs hit this (via CRON_SECRET), and it can
-// also be called manually with ?secret=APP_SECRET for testing.
+// Public, unauthenticated twin of /api/sync — this is what the dashboard's "Sync now"
+// button calls, so APP_SECRET/CRON_SECRET never has to be embedded in client-side code.
 export default async function handler(req, res) {
-  if (!checkSyncAuth(req)) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
-
   const supabase = getSupabaseAdmin();
   const result = await runFullSync(supabase);
   res.status(result.errors.length ? 207 : 200).json(result);
