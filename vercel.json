@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/sync-strava.js": { "maxDuration": 60 },
+    "api/sync-whoop.js": { "maxDuration": 60 },
+    "api/calc-pmc.js": { "maxDuration": 30 }
+  }
+}

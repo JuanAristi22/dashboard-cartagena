@@ -28,8 +28,29 @@ function mapActivity(a) {
   };
 }
 
-// Test/manual sync: pulls the most recent activities from Strava and upserts them into Supabase.
-// This is the step-1 version — no CTL/ATL/TSB calculation yet, just proving the pipeline works.
+// Fetches the athlete's full activity history from Strava, paginating until an empty/short
+// page is hit. Needed (not just "recent activities") because CTL/ATL only converge to
+// accurate values once a few months of real training load feed the exponential average.
+async function fetchAllActivities(accessToken, maxPages) {
+  const perPage = 200;
+  const all = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetch(
+      `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!res.ok) {
+      throw new Error(`Strava activities fetch failed: ${res.status} ${await res.text()}`);
+    }
+    const batch = await res.json();
+    all.push(...batch);
+    if (batch.length < perPage) break;
+  }
+  return all;
+}
+
+// Pulls the athlete's full activity history and upserts it into Supabase. Safe to run
+// repeatedly (2x/day via cron) since activities are upserted by (source, external_id).
 export default async function handler(req, res) {
   if (!checkSecret(req)) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -40,26 +61,19 @@ export default async function handler(req, res) {
     const supabase = getSupabaseAdmin();
     const accessToken = await getValidAccessToken(supabase);
 
-    const perPage = Math.min(Number(req.query.per_page) || 30, 100);
-    const activitiesRes = await fetch(
-      `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-
-    if (!activitiesRes.ok) {
-      throw new Error(`Strava activities fetch failed: ${activitiesRes.status} ${await activitiesRes.text()}`);
-    }
-
-    const activities = await activitiesRes.json();
+    const maxPages = Math.min(Number(req.query.max_pages) || 15, 25);
+    const activities = await fetchAllActivities(accessToken, maxPages);
     const rows = activities.map(mapActivity);
 
     let upserted = 0;
-    if (rows.length) {
+    const chunkSize = 200;
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
       const { error, count } = await supabase
         .from('activities')
-        .upsert(rows, { onConflict: 'source,external_id', count: 'exact' });
+        .upsert(chunk, { onConflict: 'source,external_id', count: 'exact' });
       if (error) throw error;
-      upserted = count ?? rows.length;
+      upserted += count ?? chunk.length;
     }
 
     res.status(200).json({ ok: true, fetched: activities.length, upserted });
