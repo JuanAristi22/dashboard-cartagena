@@ -28,13 +28,14 @@ function mapActivity(a) {
   };
 }
 
-// Fetches the athlete's full activity history from Strava, paginating until an empty/short
-// page is hit. Needed (not just "recent activities") because CTL/ATL only converge to
-// accurate values once a few months of real training load feed the exponential average.
-async function fetchAllActivities(accessToken, maxPages) {
+// Fetches a bounded window of pages from Strava (not the whole history at once — Vercel's
+// Hobby plan kills functions that run too long). Returns whether it hit the end of the
+// athlete's history (a short page) so the caller knows whether to request the next window.
+async function fetchActivityPages(accessToken, startPage, pageCount) {
   const perPage = 200;
   const all = [];
-  for (let page = 1; page <= maxPages; page++) {
+  let reachedEnd = false;
+  for (let page = startPage; page < startPage + pageCount; page++) {
     const res = await fetch(
       `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -44,13 +45,19 @@ async function fetchAllActivities(accessToken, maxPages) {
     }
     const batch = await res.json();
     all.push(...batch);
-    if (batch.length < perPage) break;
+    if (batch.length < perPage) {
+      reachedEnd = true;
+      break;
+    }
   }
-  return all;
+  return { activities: all, reachedEnd };
 }
 
-// Pulls the athlete's full activity history and upserts it into Supabase. Safe to run
-// repeatedly (2x/day via cron) since activities are upserted by (source, external_id).
+// Pulls one window of the athlete's activity history and upserts it into Supabase.
+// Call repeatedly with increasing `page` (using the returned `nextPage`) to backfill full
+// history — each call stays small enough to finish well inside Vercel's time limit. Safe to
+// re-run (2x/day via cron, or repeated backfill calls) since activities are upserted by
+// (source, external_id).
 export default async function handler(req, res) {
   if (!checkSecret(req)) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -61,8 +68,10 @@ export default async function handler(req, res) {
     const supabase = getSupabaseAdmin();
     const accessToken = await getValidAccessToken(supabase);
 
-    const maxPages = Math.min(Number(req.query.max_pages) || 15, 25);
-    const activities = await fetchAllActivities(accessToken, maxPages);
+    const startPage = Math.max(Number(req.query.page) || 1, 1);
+    const pageCount = Math.min(Number(req.query.pages) || 2, 5);
+
+    const { activities, reachedEnd } = await fetchActivityPages(accessToken, startPage, pageCount);
     const rows = activities.map(mapActivity);
 
     let upserted = 0;
@@ -76,7 +85,13 @@ export default async function handler(req, res) {
       upserted += count ?? chunk.length;
     }
 
-    res.status(200).json({ ok: true, fetched: activities.length, upserted });
+    res.status(200).json({
+      ok: true,
+      fetched: activities.length,
+      upserted,
+      done: reachedEnd,
+      nextPage: startPage + pageCount,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: err.message });
