@@ -1128,10 +1128,11 @@ function renderMetrics(){
       return `<div class="card card-wide">
         <div class="k">${c.k}</div>
         ${c.zones.map(z=>`
-          <div class="sport-row" title="${z.range}">
+          <div class="sport-row">
             <div class="lbl">${z.z}</div>
             <div class="bar-bg"><div class="bar-fg" style="width:${z.pct}%; background:${z.color}"></div></div>
-            <div class="hrs">${z.pct.toFixed(0)}% · ${z.range}</div>
+            <div class="hrs">${z.pct.toFixed(0)}%</div>
+            <div class="sport-tooltip">${z.pct.toFixed(0)}% · ${z.range}</div>
           </div>`).join('')}
         <div class="d" style="margin-top:8px">${c.note}</div>
       </div>`;
