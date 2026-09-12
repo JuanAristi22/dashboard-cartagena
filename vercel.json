@@ -7,8 +7,8 @@
     "api/readiness-check.js": { "maxDuration": 30 }
   },
   "crons": [
-    { "path": "/api/sync", "schedule": "0 12 * * *" },
-    { "path": "/api/sync", "schedule": "0 23 * * *" },
+    { "path": "/api/sync", "schedule": "0 13 * * *" },
+    { "path": "/api/sync", "schedule": "0 19 * * *" },
     { "path": "/api/readiness-check", "schedule": "30 10 * * *" }
   ]
 }
