@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartagena 70.3 — Panel de entrenamiento</title>
+<title>JAG - ROAD 2 IM70.3 CTG 🇨🇴</title>
+<meta property="og:title" content="JAG - ROAD 2 IM70.3 CTG 🇨🇴">
+<meta property="og:description" content="Panel de entrenamiento — 11 semanas rumbo a IRONMAN 70.3 Cartagena.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JAG - ROAD 2 IM70.3 CTG 🇨🇴">
+<meta name="twitter:description" content="Panel de entrenamiento — 11 semanas rumbo a IRONMAN 70.3 Cartagena.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -90,7 +96,13 @@
   .rp-icon{ width:15px; height:15px; color:var(--yellow); flex-shrink:0; }
   .rp-time{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--text); }
   .rp-t{ font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
-  .rp-total{ font-size:10.5px; color:var(--muted); margin-left:6px; padding-left:10px; border-left:1px solid var(--line); }
+  .goal-badge{
+    background:var(--yellow); color:#000; font-weight:800;
+    font-size:13px; letter-spacing:0.4px; text-transform:uppercase;
+    padding:6px 14px; border-radius:999px; margin-left:8px;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .goal-badge span{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:800; }
 
   /* ================== BUTTON SYSTEM ==================
      - .seg-control / .seg-btn  → single-select segmented control, understated
@@ -153,7 +165,25 @@
     padding:22px 22px 16px;
     margin-bottom:20px;
   }
-  .hero-head{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px; margin-bottom:4px; }
+  .hero-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:4px; }
+
+  .source-toggle{ display:flex; align-items:center; gap:6px; }
+  .source-icon{ width:18px; height:18px; flex-shrink:0; display:flex; opacity:0.45; transition:opacity .2s ease, transform .2s ease; }
+  .source-icon svg{ width:100%; height:100%; display:block; }
+  .source-icon.active-tp, .source-icon.active-strava{ opacity:1; transform:scale(1.08); }
+  .ios-toggle{
+    position:relative; width:38px; height:21px; border-radius:999px;
+    background:#3A3A3A; border:none; cursor:pointer; flex-shrink:0;
+    transition:background .2s ease;
+  }
+  .ios-toggle.state-tp{ background:#2E86DE; }
+  .ios-toggle.state-strava{ background:#FC4C02; }
+  .ios-toggle-thumb{
+    position:absolute; top:2px; left:2px; width:17px; height:17px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.4);
+    transition:left .2s ease;
+  }
+  .ios-toggle.state-strava .ios-toggle-thumb{ left:19px; }
   .hero h2{
     font-family:'Barlow Condensed',sans-serif;
     font-weight:700;
@@ -187,6 +217,18 @@
   .sport-row .hrs{ width:82px; text-align:right; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text); flex-shrink:0; }
 
   .section-label{ font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
+
+  .discipline-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+  .disc-card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; }
+  .disc-head{ display:flex; align-items:center; gap:8px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text); margin-bottom:12px; }
+  .disc-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .disc-row{ display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--muted); padding:4px 0; }
+  .disc-row b{ color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; }
+  .disc-sub{ font-size:10.5px; color:#666; margin:0 0 6px; line-height:1.4; }
+
+  @media (max-width:700px){
+    .discipline-grid{ grid-template-columns:1fr; }
+  }
   .section-label-sub{ font-weight:400; text-transform:none; color:#666; letter-spacing:0; }
 
   .stats{
@@ -195,7 +237,7 @@
     gap:14px;
     margin-bottom:20px;
   }
-  .stats-health{ grid-template-columns:repeat(4,1fr); }
+  .stats-health{ grid-template-columns:repeat(3,1fr); }
 
   .card{
     background:var(--panel);
@@ -300,6 +342,39 @@
   .nav-item:hover{ background:#1C1C1C; color:#fff; }
   .nav-item.active{ color:var(--yellow); }
 
+  /* ---- desktop: fixed left sidebar, always visible ---- */
+  @media (min-width:701px){
+    body{ padding-left:84px; }
+    .nav-toggle-btn{ display:none; }
+    .nav-bar{ margin-bottom:0; }
+    .nav-dropdown{
+      display:flex !important;
+      flex-direction:column;
+      position:fixed;
+      top:0; left:0; bottom:0;
+      width:72px;
+      border-radius:0;
+      border:none;
+      border-right:1px solid var(--line);
+      padding:18px 10px;
+      box-shadow:none;
+      z-index:50;
+      min-width:0;
+      align-items:center;
+      gap:6px;
+    }
+    .nav-item{
+      flex-direction:column;
+      gap:5px;
+      padding:12px 4px;
+      text-align:center;
+      font-size:10px;
+      letter-spacing:0.2px;
+    }
+    .nav-item svg{ width:20px; height:20px; }
+    .nav-item.active{ background:#1C1C1C; }
+  }
+
   /* ================== TRAINING PLAN ================== */
   details.week-card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; overflow:hidden; }
   .week-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; flex-direction:column; gap:7px; }
@@ -360,8 +435,17 @@
   .block-notes b{ color:var(--yellow); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.3px; }
   .confirm-flag{ color:var(--yellow); font-weight:600; }
 
-  details.zones-ref{ background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; overflow:hidden; }
-  .zones-ref-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; align-items:center; gap:10px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px; text-transform:uppercase; color:var(--text); }
+  details.zones-ref{
+    background:linear-gradient(180deg, rgba(255,199,44,0.07), rgba(255,199,44,0.02));
+    border:1px solid var(--yellow);
+    border-left:4px solid var(--yellow);
+    border-radius:8px;
+    margin-bottom:16px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,199,44,0.08);
+  }
+  .zones-ref-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; align-items:center; gap:10px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px; text-transform:uppercase; color:var(--yellow); }
+  .zones-ref-summary svg.day-toggle-icon{ color:var(--yellow); }
   .refresh-group{ margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
   .refresh-btn{
     display:inline-flex; align-items:center; gap:6px;
@@ -400,7 +484,7 @@
     .hero-metric-label{ font-size:10px; gap:4px; }
     .race-plan{ gap:6px 10px; }
     .rp-time{ font-size:11.5px; }
-    .rp-total{ width:100%; margin-left:0; padding-left:0; border-left:none; padding-top:6px; border-top:1px solid var(--line); margin-top:2px; }
+    .goal-badge{ width:100%; margin-left:0; margin-top:6px; justify-content:center; }
     .block-title{ min-width:100%; }
     .day-chips{ gap:5px; }
     .day-chip{ font-size:10px; padding:3px 6px; }
@@ -448,7 +532,7 @@
           <svg class="rp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.2" cy="4.5" r="1.7" fill="currentColor" stroke="none"/><path d="M7 21l2.5-4.5-1.8-3.2 1.3-3.8 3.7 1.6 1.3 3.4h3.5"/><path d="M11.5 10.5l-3.8 1.3-2.2 3.7"/></svg>
           <span class="rp-time">1:30:00</span>
         </div>
-        <div class="rp-total">Goal: 4:28:00</div>
+        <div class="goal-badge">GOAL <span>4:28:00</span></div>
       </div>
     </div>
     <div class="header-actions">
@@ -478,6 +562,17 @@
   <div class="hero">
     <div class="hero-head">
       <h2>Overall Progress</h2>
+      <div class="source-toggle">
+        <span class="source-icon" id="label-tp">
+          <svg viewBox="0 0 24 24"><rect x="0.75" y="0.75" width="22.5" height="22.5" rx="6" fill="#0A1628" stroke="rgba(255,255,255,0.28)" stroke-width="1"/><g fill="#3B82F6"><polygon points="9,17.5 10.8,17.5 13.3,6.5 11.5,6.5"/><polygon points="12.2,17.5 14,17.5 16,10.8 14.2,10.8"/><polygon points="6,14.5 7.8,14.5 9,11 7.2,11"/></g></svg>
+        </span>
+        <button class="ios-toggle" id="source-toggle-btn" aria-label="Toggle data source">
+          <span class="ios-toggle-thumb"></span>
+        </button>
+        <span class="source-icon" id="label-strava">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#FC4C02"/><g transform="translate(4.5,4) scale(0.94)" fill="#fff"><path d="M6.731 0 2 9.125h2.788L6.73 5.497l1.93 3.628h2.766zm4.694 9.125-1.372 2.756L8.66 9.125H6.547L10.053 16l3.484-6.875z"/></g></svg>
+        </span>
+      </div>
     </div>
     <div class="hero-metrics" id="hero-metrics"></div>
     <div class="toggle-group" id="tabs"></div>
@@ -515,16 +610,33 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-sesiones">
-    <h2>Recent Sessions</h2>
-    <div class="sub">TrainingPeaks — most recently completed</div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr><th>Date</th><th>Session</th><th>Sport</th><th>Dist.</th><th>Dur.</th><th>TSS</th><th>IF</th></tr>
-        </thead>
-        <tbody id="workout-rows"></tbody>
-      </table>
+  <div class="section-label">By discipline <span class="section-label-sub">· latest tested/measured values</span></div>
+  <div class="discipline-grid">
+    <div class="disc-card">
+      <div class="disc-head"><span class="disc-dot" style="background:#FFC72C"></span>CYCLING</div>
+      <div class="disc-row"><span>FTP</span><b>296W</b></div>
+      <div class="disc-sub">Confirmed via Wahoo ramp test, Sep 11</div>
+      <div class="disc-row"><span>Cadence — simulator</span><b>94 rpm</b></div>
+      <div class="disc-row"><span>Cadence — long/climbs</span><b>72 rpm</b></div>
+      <div class="disc-sub">Lower on outdoor climbs is normal — terrain-driven, not a red flag</div>
+      <div class="disc-row"><span>Best recent effort</span><b>295W × 4min</b></div>
+    </div>
+    <div class="disc-card">
+      <div class="disc-head"><span class="disc-dot" style="background:#FF7A45"></span>RUNNING</div>
+      <div class="disc-row"><span>Threshold pace</span><b>4:08/km</b></div>
+      <div class="disc-sub">Recalibrated from your MMB half marathon</div>
+      <div class="disc-row"><span>Avg cadence</span><b>176 spm</b></div>
+      <div class="disc-row"><span>5K</span><b>20:12</b></div>
+      <div class="disc-row"><span>10K</span><b>40:47</b></div>
+      <div class="disc-row"><span>Half marathon</span><b>1:27:04</b></div>
+      <div class="disc-sub">All from your MMB race, Jul 26</div>
+    </div>
+    <div class="disc-card">
+      <div class="disc-head"><span class="disc-dot" style="background:#22D3EE"></span>SWIMMING</div>
+      <div class="disc-row"><span>Threshold pace</span><b>1:35/100m</b></div>
+      <div class="disc-sub">Stale — no recent test behind this number</div>
+      <div class="disc-row"><span>Cadence / stroke rate</span><b>—</b></div>
+      <div class="disc-sub">No sessions logged yet — baseline 400m TT is Week 1, Monday</div>
     </div>
   </div>
 
@@ -593,7 +705,8 @@
 <script>
 // ================== DATOS ==================
 const RACE_DATE = new Date('2026-11-29T00:00:00');
-const TODAY = new Date('2026-09-11T00:00:00');
+const _now = new Date();
+const TODAY = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
 
 const pmc = [["2026-06-01",71.8,63.1,8.8,0.0],["2026-06-02",71.9,64.6,7.3,73.74],["2026-06-03",70.2,55.4,14.8,0.0],["2026-06-04",68.5,47.5,21.0,0.0],["2026-06-05",66.9,40.7,26.2,0.0],["2026-06-06",65.3,34.9,30.4,0.0],["2026-06-07",66.1,44.1,22.0,99.6],["2026-06-08",69.1,65.2,3.9,191.44],["2026-06-09",67.4,55.9,11.6,0.0],["2026-06-10",69.3,68.7,0.6,145.71],["2026-06-11",67.6,58.9,8.8,0.0],["2026-06-12",68.1,63.1,5.1,88.14],["2026-06-13",70.4,77.2,-6.9,162.25],["2026-06-14",75.1,104.7,-29.6,269.32],["2026-06-15",73.3,89.7,-16.4,0.0],["2026-06-16",71.6,76.9,-5.3,0.0],["2026-06-17",72.1,79.0,-7.0,91.77],["2026-06-18",70.3,67.7,2.6,0.0],["2026-06-19",70.1,66.8,3.3,61.38],["2026-06-20",75.9,102.0,-26.1,313.14],["2026-06-21",76.5,102.0,-25.5,101.86],["2026-06-22",74.7,87.4,-12.7,0.0],["2026-06-23",72.9,74.9,-2.0,0.0],["2026-06-24",73.5,77.8,-4.4,95.24],["2026-06-25",71.7,66.7,5.0,0.0],["2026-06-26",70.0,57.2,12.8,0.0],["2026-06-27",70.7,63.3,7.5,99.71],["2026-06-28",71.9,71.3,0.6,119.45],["2026-06-29",70.2,61.1,9.1,0.0],["2026-06-30",68.5,52.4,16.1,0.0],["2026-07-01",69.1,58.6,10.5,95.92],["2026-07-02",69.6,63.0,6.6,89.36],["2026-07-03",68.0,54.0,14.0,0.0],["2026-07-04",66.3,46.3,20.1,0.0],["2026-07-05",67.5,55.8,11.6,113.01],["2026-07-06",65.9,47.8,18.0,0.0],["2026-07-07",64.3,41.0,23.3,0.0],["2026-07-08",62.8,35.1,27.6,0.0],["2026-07-09",63.3,42.2,21.1,84.47],["2026-07-10",63.8,48.6,15.2,87.34],["2026-07-11",62.3,41.7,20.6,0.0],["2026-07-12",60.8,35.7,25.1,0.0],["2026-07-13",62.4,48.9,13.5,128.08],["2026-07-14",61.0,41.9,19.0,0.0],["2026-07-15",61.6,48.6,13.0,88.41],["2026-07-16",60.1,41.6,18.5,0.0],["2026-07-17",58.7,35.7,23.0,0.0],["2026-07-18",60.7,50.7,10.0,140.73],["2026-07-19",61.7,58.1,3.6,102.53],["2026-07-20",60.2,49.8,10.4,0.0],["2026-07-21",58.8,42.7,16.1,0.0],["2026-07-22",59.4,48.6,10.7,84.43],["2026-07-23",59.1,48.6,10.5,48.15],["2026-07-24",59.0,49.7,9.4,56.17],["2026-07-25",58.4,47.4,11.0,33.86],["2026-07-26",61.3,65.9,-4.6,176.78],["2026-07-27",59.8,56.5,3.3,0.0],["2026-07-28",58.4,48.4,10.0,0.0],["2026-07-29",57.0,41.5,15.5,0.0],["2026-07-30",55.6,35.6,20.1,0.0],["2026-07-31",56.2,42.1,14.1,81.34],["2026-08-01",59.0,60.6,-1.6,171.7],["2026-08-02",60.9,71.7,-10.8,138.09],["2026-08-03",59.4,61.4,-2.0,0.0],["2026-08-04",58.0,52.7,5.3,0.0],["2026-08-05",58.6,56.8,1.8,81.62],["2026-08-06",57.2,48.7,8.5,0.0],["2026-08-07",61.5,76.0,-14.4,239.58],["2026-08-08",60.1,65.1,-5.1,0.0],["2026-08-09",58.6,55.8,2.8,0.0],["2026-08-10",57.2,47.8,9.4,0.0],["2026-08-11",55.9,41.0,14.9,0.0],["2026-08-12",56.9,49.3,7.6,98.86],["2026-08-13",55.5,42.2,13.3,0.0],["2026-08-14",55.3,42.9,12.4,47.2],["2026-08-15",54.0,36.8,17.2,0.0],["2026-08-16",55.7,49.1,6.6,122.72],["2026-08-17",54.3,42.1,12.3,0.0],["2026-08-18",53.0,36.1,17.0,0.0],["2026-08-19",51.8,30.9,20.9,0.0],["2026-08-20",50.5,26.5,24.0,0.0],["2026-08-21",51.1,33.5,17.7,75.24],["2026-08-22",49.9,28.7,21.2,0.0],["2026-08-23",51.2,39.6,11.6,105.44],["2026-08-24",50.0,34.0,16.0,0.0],["2026-08-25",48.8,29.1,19.7,0.0],["2026-08-26",49.9,38.4,11.5,93.89],["2026-08-27",51.8,51.5,0.3,130.1],["2026-08-28",52.5,55.5,-3.1,79.94],["2026-08-29",51.2,47.6,3.6,0.0],["2026-08-30",51.4,49.1,2.3,57.98],["2026-08-31",50.2,42.1,8.1,0.0],["2026-09-01",49.0,36.1,12.9,0.0],["2026-09-02",47.8,30.9,16.9,0.0],["2026-09-03",46.7,26.5,20.2,0.0],["2026-09-04",46.9,30.9,16.0,57.62],["2026-09-05",45.8,26.5,19.3,0.0],["2026-09-06",46.8,35.5,11.3,89.47],["2026-09-07",45.7,30.4,15.3,0.0],["2026-09-08",44.6,26.1,18.5,0.0],["2026-09-09",45.1,31.6,13.5,64.93],["2026-09-10",44.1,27.1,16.9,0.0],["2026-09-11",44.7,33.4,11.3,70.84]];
 
@@ -601,10 +714,12 @@ const whoop = [["2026-08-13",32,1.59],["2026-08-14",63,12.78],["2026-08-15",66,2
 
 // Weekly health averages from Whoop (last 7 days vs previous 7 days), pulled 2026-09-11
 const WEEKLY_HEALTH = {
-  rhr:   { curr: 37.29, prev: 35.14 },
-  hrv:   { curr: 169.69, prev: 182.99 },
-  sleep: { curr: 6.03, prev: 6.33 },
-  sleepPct: { curr: 69.71, prev: 77.71 }
+  rhr:   { curr: 37.43, prev: 35.29 },
+  hrv:   { curr: 170.1, prev: 181.33 },
+  sleep: { curr: 5.92, prev: 6.23 },
+  sleepPct: { curr: 68.71, prev: 76.86 },
+  resp:  { curr: 14.13, prev: 14.10 },
+  spo2:  { curr: 94.51, prev: 93.93 }
 };
 
 // HR zone distribution, last 30 days (bike + run sessions only), computed from Strava HR streams
@@ -620,19 +735,6 @@ const ZONE_DIST = [
 const coros = [["2026-08-13",33.0,0.69],["2026-08-14",38.0,0.76],["2026-08-15",30.0,0.65],["2026-08-16",44.0,1.05],["2026-08-17",42.0,0.92],["2026-08-18",40.0,0.82],["2026-08-19",34.0,0.71],["2026-08-20",29.0,0.63],["2026-08-21",39.0,0.78],["2026-08-22",32.0,0.67],["2026-08-23",44.0,1.01],["2026-08-24",42.0,0.89],["2026-08-25",39.0,0.78],["2026-08-26",43.0,1.00],["2026-08-27",41.0,0.87],["2026-08-28",44.0,1.02],["2026-08-29",42.0,0.90],["2026-08-30",43.0,0.98],["2026-08-31",41.0,0.86],["2026-09-01",37.0,0.75],["2026-09-02",31.0,0.66],["2026-09-03",25.0,0.57],["2026-09-04",34.0,0.70],["2026-09-05",28.0,0.61],["2026-09-06",43.0,0.95],["2026-09-07",40.0,0.82],["2026-09-08",36.0,0.73],["2026-09-09",41.0,0.88],["2026-09-10",39.0,0.78],["2026-09-11",32.0,0.67]];
 
 const stravaPmc = [["2026-06-01",129.9,116.5,13.4],["2026-06-02",130.7,123.3,7.4],["2026-06-03",127.6,105.7,21.9],["2026-06-04",125.4,95.4,29.9],["2026-06-05",122.4,81.8,40.6],["2026-06-06",123.4,93.8,29.6],["2026-06-07",124.8,106.1,18.6],["2026-06-08",128.7,132.7,-3.9],["2026-06-09",125.7,113.7,11.9],["2026-06-10",126.9,122.6,4.3],["2026-06-11",123.9,105.1,18.7],["2026-06-12",123.9,108.2,15.7],["2026-06-13",125.7,120.9,4.8],["2026-06-14",134.6,175.1,-40.5],["2026-06-15",132.5,156.9,-24.4],["2026-06-16",129.6,135.8,-6.2],["2026-06-17",129.5,134.5,-5.0],["2026-06-18",127.1,119.2,7.9],["2026-06-19",126.4,116.1,10.2],["2026-06-20",132.3,153.0,-20.7],["2026-06-21",131.5,145.6,-14.0],["2026-06-22",128.4,124.8,3.6],["2026-06-23",126.0,110.8,15.2],["2026-06-24",125.1,107.4,17.7],["2026-06-25",122.1,92.1,30.0],["2026-06-26",119.2,78.9,40.3],["2026-06-27",118.6,81.1,37.5],["2026-06-28",118.4,85.5,32.9],["2026-06-29",115.6,73.3,42.3],["2026-06-30",112.9,63.1,49.8],["2026-07-01",112.0,64.9,47.1],["2026-07-02",111.7,69.7,42.0],["2026-07-03",109.0,59.7,49.3],["2026-07-04",106.4,51.2,55.3],["2026-07-05",108.4,71.2,37.3],["2026-07-06",105.9,61.0,44.9],["2026-07-07",103.3,52.3,51.1],["2026-07-08",100.9,44.8,56.1],["2026-07-09",101.1,54.1,47.0],["2026-07-10",102.1,67.1,35.0],["2026-07-11",102.5,74.4,28.1],["2026-07-12",101.2,70.2,31.0],["2026-07-13",102.1,80.4,21.7],["2026-07-14",99.7,68.9,30.7],["2026-07-15",100.2,76.4,23.8],["2026-07-16",99.1,73.5,25.7],["2026-07-17",96.8,63.0,33.8],["2026-07-18",95.9,62.7,33.2],["2026-07-19",96.7,72.0,24.7],["2026-07-20",94.4,61.7,32.7],["2026-07-21",92.4,54.3,38.0],["2026-07-22",92.3,59.4,32.9],["2026-07-23",91.2,57.4,33.8],["2026-07-24",90.9,60.3,30.6],["2026-07-25",89.5,56.4,33.1],["2026-07-26",96.4,102.4,-6.0],["2026-07-27",94.1,87.7,6.3],["2026-07-28",91.8,75.2,16.6],["2026-07-29",89.7,64.5,25.2],["2026-07-30",89.2,65.5,23.7],["2026-07-31",90.2,74.9,15.3],["2026-08-01",91.9,86.9,5.0],["2026-08-02",93.9,99.8,-5.9],["2026-08-03",91.7,85.5,6.1],["2026-08-04",91.7,86.4,5.2],["2026-08-05",92.6,93.0,-0.3],["2026-08-06",90.4,79.7,10.7],["2026-08-07",95.4,111.3,-15.9],["2026-08-08",94.9,105.7,-10.8],["2026-08-09",92.6,90.6,2.0],["2026-08-10",90.6,78.5,12.1],["2026-08-11",89.0,70.7,18.3],["2026-08-12",89.9,78.9,11.0],["2026-08-13",87.8,67.6,20.1],["2026-08-14",87.1,66.4,20.7],["2026-08-15",85.0,56.9,28.1],["2026-08-16",87.9,78.2,9.7],["2026-08-17",85.8,67.0,18.8],["2026-08-18",84.7,63.3,21.4],["2026-08-19",82.7,54.3,28.4],["2026-08-20",80.8,46.7,34.1],["2026-08-21",80.8,52.0,28.8],["2026-08-22",78.9,44.6,34.3],["2026-08-23",81.6,65.6,16.0],["2026-08-24",81.1,64.8,16.3],["2026-08-25",79.2,55.6,23.6],["2026-08-26",79.9,63.2,16.7],["2026-08-27",81.4,74.5,6.9],["2026-08-28",81.7,77.4,4.3],["2026-08-29",79.9,67.2,12.7],["2026-08-30",79.9,69.2,10.7],["2026-08-31",78.3,61.1,17.2],["2026-09-01",78.0,61.8,16.2],["2026-09-02",76.2,53.0,23.2],["2026-09-03",76.0,55.6,20.5],["2026-09-04",75.3,53.9,21.4],["2026-09-05",73.5,46.2,27.3],["2026-09-06",75.8,63.9,11.9],["2026-09-07",74.0,54.8,19.2],["2026-09-08",72.2,46.9,25.3],["2026-09-09",72.5,52.1,20.4],["2026-09-10",71.1,46.8,24.3],["2026-09-11",71.1,50.0,21.1]];
-
-const workouts = [
-  ["2026-09-11","Half Monty (Ramp Test)","Bike","30.7 km","58 min",70.84,0.86],
-  ["2026-09-09","Running","Run","9.7 km","51 min",64.93,0.87],
-  ["2026-09-06","Running","Run","10.9 km","47 min",89.47,1.08],
-  ["2026-09-04","Running","Run","7.9 km","37 min",57.62,0.98],
-  ["2026-08-30","Trail Running","Run","7.9 km","67 min",57.98,0.72],
-  ["2026-08-28","Running","Run","10.9 km","56 min",79.94,0.93],
-  ["2026-08-27","Cycling","Bike","78.3 km","147 min",130.10,0.73],
-  ["2026-08-26","Running","Run","12.5 km","57 min",93.89,1.00],
-  ["2026-08-23","Running","Run","14.8 km","70 min",105.44,0.95],
-  ["2026-08-21","Running","Run","10.8 km","54 min",75.24,0.92]
-];
 
 const GLOSS = {
   ctl: "Fitness (CTL): your accumulated training load over the last 6 weeks, calculated from Strava's Relative Effort (centralizes Coros, Wahoo and Technogym). Rises and falls slowly — it's the base you've built.",
@@ -694,16 +796,69 @@ function renderHeroRangeTabs(){
   });
 }
 
+// ================== DATA SOURCE TOGGLE (TP vs Strava) ==================
+let currentSource = 'strava';
+function getSourceData(){ return currentSource === 'tp' ? pmc : stravaPmc; }
+
 function updateHeroChartRange(){
   const range = HERO_RANGES.find(r=>r.id===heroRange);
   const cutoff = addDays(TODAY, -range.days);
-  const filteredStrava = stravaPmc.filter(d => toDate(d[0]) >= cutoff);
-  heroChart.data.labels = filteredStrava.map(d=>d[0]);
-  heroChart.data.datasets[0].data = filteredStrava.map(d=>d[1]);
-  heroChart.data.datasets[1].data = filteredStrava.map(d=>d[2]);
-  heroChart.data.datasets[2].data = filteredStrava.map(d=>d[3]);
+  const data = getSourceData();
+  const filtered = data.filter(d => toDate(d[0]) >= cutoff);
+  heroChart.data.labels = filtered.map(d=>d[0]);
+  heroChart.data.datasets[0].data = filtered.map(d=>d[1]);
+  heroChart.data.datasets[1].data = filtered.map(d=>d[2]);
+  heroChart.data.datasets[2].data = filtered.map(d=>d[3]);
   heroChart.update();
 }
+
+function renderHeroMetrics(){
+  const data = getSourceData();
+  const last = data[data.length-1];
+  document.getElementById('hero-metrics').innerHTML = `
+    <div class="hero-metric-box">
+      <div class="hero-metric-label"><span class="dot" style="background:#FFC72C"></span>Fitness</div>
+      <div class="hero-metric-value">${last[1]}</div>
+      <details class="more-toggle"><summary>More</summary><p>${GLOSS.ctl}</p></details>
+    </div>
+    <div class="hero-metric-box">
+      <div class="hero-metric-label"><span class="dot" style="background:#FF7A45"></span>Fatigue</div>
+      <div class="hero-metric-value">${last[2]}</div>
+      <details class="more-toggle"><summary>More</summary><p>${GLOSS.atl}</p></details>
+    </div>
+    <div class="hero-metric-box">
+      <div class="hero-metric-label"><span class="dot" style="background:#3DDC84"></span>Form</div>
+      <div class="hero-metric-value">${last[3] > 0 ? '+' : ''}${last[3]}</div>
+      <details class="more-toggle"><summary>More</summary><p>${GLOSS.tsb}</p></details>
+    </div>
+  `;
+}
+
+function applySourceUI(){
+  const btn = document.getElementById('source-toggle-btn');
+  const labelTp = document.getElementById('label-tp');
+  const labelStrava = document.getElementById('label-strava');
+  btn.classList.toggle('state-tp', currentSource==='tp');
+  btn.classList.toggle('state-strava', currentSource==='strava');
+  labelTp.classList.toggle('active-tp', currentSource==='tp');
+  labelStrava.classList.toggle('active-strava', currentSource==='strava');
+}
+
+document.getElementById('source-toggle-btn').addEventListener('click', ()=>{
+  currentSource = currentSource === 'tp' ? 'strava' : 'tp';
+  applySourceUI();
+  renderHeroMetrics();
+  updateHeroChartRange();
+});
+applySourceUI();
+
+// ---- Whoop today gauge ----
+const whoopToday = whoop[whoop.length-1][1];
+document.getElementById('whoop-today-value').innerHTML = `${whoopToday}<span>%</span>`;
+document.getElementById('whoop-gauge-marker').style.left = whoopToday+'%';
+
+renderHeroMetrics();
+
 
 // ================== COUNTDOWN ==================
 const daysLeft = Math.round((RACE_DATE - TODAY) / 86400000);
@@ -719,32 +874,6 @@ const daysLeft = Math.round((RACE_DATE - TODAY) / 86400000);
   }
   requestAnimationFrame(tick);
 })();
-
-// ---- Whoop today gauge ----
-const whoopToday = whoop[whoop.length-1][1];
-document.getElementById('whoop-today-value').innerHTML = `${whoopToday}<span>%</span>`;
-document.getElementById('whoop-gauge-marker').style.left = whoopToday+'%';
-
-const last = stravaPmc[stravaPmc.length-1];
-const lastTP = pmc[pmc.length-1];
-
-document.getElementById('hero-metrics').innerHTML = `
-  <div class="hero-metric-box">
-    <div class="hero-metric-label"><span class="dot" style="background:#FFC72C"></span>Fitness</div>
-    <div class="hero-metric-value">${last[1]}</div>
-    <details class="more-toggle"><summary>More</summary><p>${GLOSS.ctl}</p></details>
-  </div>
-  <div class="hero-metric-box">
-    <div class="hero-metric-label"><span class="dot" style="background:#FF7A45"></span>Fatigue</div>
-    <div class="hero-metric-value">${last[2]}</div>
-    <details class="more-toggle"><summary>More</summary><p>${GLOSS.atl}</p></details>
-  </div>
-  <div class="hero-metric-box">
-    <div class="hero-metric-label"><span class="dot" style="background:#3DDC84"></span>Form</div>
-    <div class="hero-metric-value">${last[3] > 0 ? '+' : ''}${last[3]}</div>
-    <details class="more-toggle"><summary>More</summary><p>${GLOSS.tsb}</p></details>
-  </div>
-`;
 
 // ================== HORAS ENTRENADAS (por actividad, Strava) ==================
 // [fecha, deporte, horas] — duplicados de sincronización ya excluidos
@@ -918,6 +1047,16 @@ function renderMetrics(){
       k:'SLEEP', v: WEEKLY_HEALTH.sleep.curr.toFixed(1)+'h', dot:'#9B8CFF',
       d: `<span class="d"><span class="delta-badge ${WEEKLY_HEALTH.sleepPct.curr>=WEEKLY_HEALTH.sleepPct.prev?'up':'down'}">${WEEKLY_HEALTH.sleepPct.curr.toFixed(0)}%</span> <span class="delta-text">of sleep need met</span></span>`,
       g:'Average nightly sleep and the % of Whoop\'s calculated sleep need you actually got. Below ~85% consistently limits how well you absorb training load, regardless of how much you train.'
+    },
+    {
+      k:'RESP. RATE', v: WEEKLY_HEALTH.resp.curr.toFixed(1)+'/min', dot:'#F5D76E',
+      d: deltaBadge(WEEKLY_HEALTH.resp.curr, WEEKLY_HEALTH.resp.prev, false),
+      g:'Breaths per minute during sleep. Usually very stable — a rise of even half a point above your normal often shows up before you feel sick or before other recovery signals move. Worth watching more than reacting to day-to-day.'
+    },
+    {
+      k:'SPO2', v: WEEKLY_HEALTH.spo2.curr.toFixed(1)+'%', dot:'#5FB77E',
+      d: deltaBadge(WEEKLY_HEALTH.spo2.curr, WEEKLY_HEALTH.spo2.prev, false),
+      g:'Blood oxygen saturation during sleep. Your normal here (~93-95%) is lower than sea level because Bogotá sits at ~2,600m — that\'s altitude, not a health issue. It\'s also exactly why race day at sea level in Cartagena should feel easier to breathe than your training does.'
     }
   ];
 
@@ -966,17 +1105,6 @@ function renderMetrics(){
 
 renderPeriodTabs();
 renderMetrics();
-
-document.getElementById('workout-rows').innerHTML = workouts.map(w=>`
-  <tr>
-    <td>${w[0].slice(5)}</td>
-    <td class="sport">${w[1]}</td>
-    <td>${w[2]}</td>
-    <td>${w[3]}</td>
-    <td>${w[4]}</td>
-    <td>${w[5]}</td>
-    <td>${w[6]}</td>
-  </tr>`).join('');
 
 // ================== CHARTS ==================
 Chart.defaults.font.family = "'Inter',sans-serif";
@@ -1181,7 +1309,7 @@ function sportIcon(sport, cls){
 }
 
 // Each day = array of blocks. Block: {sport, label, time, detail, notes, optional}
-const WEEKS = [{"n": 1, "dates": "Sep 14–20", "phase": "Rebuild", "hours": 12.8, "days": {"MON": [{"sport": "Swim", "label": "Baseline test — 400m TT", "time": "50 min", "detail": "1. Warm up: 15min easy + drills\n2. Main: 400m all-out time trial (this recalibrates your swim pace)\n3. Cool down: 4x100m easy, 5min", "notes": "This number sets every swim pace in the rest of the plan — don't skip it."}], "TUE": [{"sport": "Bike", "label": "Simulator: tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 118W · Zone 1", "main": "2. Active: 30 min @ 237W · Zone 3", "cooldown": "3. Cool Down: 15 min @ 118W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "45 min", "detail": "Full circuit, 3 rounds: squat, knee extension, single-leg work, deadlift, calf raises.", "notes": "Never run above Z2 the same day after this session."}], "WED": [{"sport": "Run", "label": "Trote progresivo", "time": "60 min", "detail": {"warmup": null, "main": "Ramp up in 6 steps:\n1. 2.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:10 min/km · Zone 2\n4. 2.00 km @ 4:52 min/km · Zone 2\n5. 2.00 km @ 4:36 min/km · Zone 3\n6. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "40 min", "detail": "Easy continuous Z2 (2:03-1:48/100m), technique focus."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride — steady strong pace with the group (Z3 sustained ~230-260W, surges into Z4-Z5 on rollers)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "30 min", "detail": "Lighter version of Tuesday's circuit, 2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail optional", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:00", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 150 min @ 184W · Zone 2 steady, with 3x8min @237W (Z3) mixed in\n3. Cool down: 15 min @ 118W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "90 min", "detail": "90 min continuous @ 5:44 min/km · Zone 1."}, {"sport": "Swim", "label": "Easy swim", "time": "30 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 2, "dates": "Sep 21–27", "phase": "Rebuild", "hours": 13.2, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "55 min", "detail": "8x150m @ Z2 (2:03-1:48/100m), 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: tempo", "time": "65 min", "detail": {"warmup": "1. Warm up: 15 min @ 118W · Zone 1", "main": "2. Active: 35 min @ 237W · Zone 3", "cooldown": "3. Cool Down: 15 min @ 118W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "45 min", "detail": "Full circuit, 3 rounds."}], "WED": [{"sport": "Run", "label": "Cambios de ritmo", "time": "55 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:54 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 30sec @ 3:36 min/km · Zone 6\n2. Easy: 60sec @ 5:18 min/km · Zone 2\n3. Hard: 60sec @ 3:45 min/km · Zone 5\n4. Easy: 90sec @ 5:18 min/km · Zone 2\n5. Hard: 90sec @ 3:56 min/km · Zone 5\n6. Easy: 120sec @ 5:18 min/km · Zone 2", "cooldown": "1. Cool Down: 15 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "40 min", "detail": "Easy continuous Z2."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride — steady strong pace (Z3 sustained, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "30 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, mountain option", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, negative split second half\n3. Cool down: 15 min @ 118W · Zone 1"}], "SUN": [{"sport": "Brick", "label": "Brick #1 — race-pace brick", "time": "~1:35 total", "detail": {"warmup": "1. Warm up (bike): 10 min @ 118W · Zone 1", "main": "2. Cycling @ race pace: 60 min @ 231W · Zone 3\n3. Quick transition\n4. Running @ race pace: 30 min @ 4:21 min/km · Zone 4", "cooldown": "5. Cool down: walk 10min. Hydrate + fuel exactly as you plan to on race day."}}]}}, {"n": 3, "dates": "Sep 28–Oct 4", "phase": "Build 1", "hours": 13.9, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "65 min", "detail": "7x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 3x:\n1. Hard: 8 min @ 281W · Zone 4\n2. Recovery: 4 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "15 min", "detail": "Straight off the bike: 15min @ 5:44 min/km · Zone 1 — legs will feel heavy, that's the point."}, {"sport": "Strength", "label": "Midday circuit", "time": "40 min", "detail": "Full circuit, 3 rounds."}], "WED": [{"sport": "Run", "label": "Trote progresivo — extended", "time": "65 min", "detail": {"warmup": null, "main": "Ramp up in 5 steps:\n1. 3.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:10 min/km · Zone 2\n4. 2.00 km @ 4:52 min/km · Zone 2\n5. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "6x100m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "35 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:30", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 180 min @ 186W · Zone 2 steady with 3x10min @237W (Z3)\n3. Cool down: 15 min @ 118W · Zone 1"}], "SUN": [{"sport": "Run", "label": "Long run", "time": "95 min", "detail": "75 min continuous @ 5:44 min/km · Zone 1, last 20 min @ 4:42 min/km · Zone 3."}, {"sport": "Swim", "label": "Easy swim", "time": "30 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 4, "dates": "Oct 5–11", "phase": "Build 1", "hours": 14.5, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "75 min", "detail": "9x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "65 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 3x:\n1. Hard: 10 min @ 281W · Zone 4\n2. Recovery: 3 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "18 min", "detail": "18min @ 5:44 min/km · Zone 1 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "40 min", "detail": "Full circuit, 3 rounds."}], "WED": [{"sport": "Run", "label": "Threshold repeats", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:08 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 10 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "8x100m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "35 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:45", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 195 min @ 186W · Zone 2 steady, fuel every 20min\n3. Cool down: 15 min @ 118W · Zone 1"}], "SUN": [{"sport": "Run", "label": "Long run", "time": "95 min", "detail": "75 min continuous @ 5:44 min/km · Zone 1, last 20 min @ 4:42 min/km · Zone 3."}, {"sport": "Swim", "label": "Easy swim", "time": "30 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 5, "dates": "Oct 12–18", "phase": "Build 1", "hours": 15.2, "days": {"MON": [{"sport": "Swim", "label": "Endurance + technique", "time": "65 min", "detail": "Technique block + 10x150m @ Z2, 15s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "65 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 4x:\n1. Hard: 8 min @ 281W · Zone 4\n2. Recovery: 3 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:35 min/km · Zone 1 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "40 min", "detail": "Full circuit, 3 rounds."}], "WED": [{"sport": "Run", "label": "Trote progresivo — extended", "time": "70 min", "detail": {"warmup": null, "main": "Ramp up in 5 steps:\n1. 3.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:02 min/km · Zone 2\n4. 2.00 km @ 4:42 min/km · Zone 3\n5. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "6x150m @ Z2-Z3, 20s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "35 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride — peak of this block", "time": "4:00", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 210 min @ 186W · Zone 2 steady with 4x10min @237W (Z3)\n3. Cool down: 15 min @ 118W · Zone 1"}], "SUN": [{"sport": "Brick", "label": "Brick #2 — building", "time": "~2:05 total", "detail": {"warmup": "1. Warm up (bike): 10 min @ 118W · Zone 1", "main": "2. Cycling @ race pace: 75 min @ 237W · Zone 3\n3. Quick transition\n4. Running @ race pace: 40 min @ 4:16 min/km · Zone 4", "cooldown": "5. Cool down: walk 10min. Hydrate + fuel exactly as you plan to on race day."}}]}}, {"n": 6, "dates": "Oct 19–25", "phase": "Build 1 — cutback", "hours": 9.7, "days": {"MON": [{"sport": "Swim", "label": "Easy technique", "time": "45 min", "detail": "Drills + easy swimming Z1-Z2, no big sets. Absorb 5 weeks of build."}], "TUE": [{"sport": "Bike", "label": "Simulator: easy tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 118W · Zone 1", "main": "2. Active: 20 min @ 231W · Zone 3", "cooldown": "3. Cool Down: 25 min @ 118W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "35 min", "detail": "2 rounds — down week."}], "WED": [{"sport": "Run", "label": "Easy intervals", "time": "55 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:54 min/km · Zone 1", "main": "Repeat 3x:\n1. Hard: 30sec @ 3:30 min/km · Zone 6\n2. Easy: 150sec @ 5:18 min/km · Zone 2", "cooldown": "1. Cool Down: 15 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "35 min", "detail": "Easy continuous Z1-Z2."}], "THU": [{"sport": "Bike", "label": "VALS (easy version)", "time": "~1:30", "detail": "Vuelta a la Sabana, ridden easy this week — Z2-Z3 only, skip the surges."}, {"sport": "Strength", "label": "Midday maintenance", "time": "25 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic", "time": "55 min", "detail": "55 min continuous @ 5:54 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Easy ride", "time": "2:00", "detail": "120 min @ 172W · Zone 2 — Z1-Z2 only, no intervals. Recovery week."}], "SUN": [{"sport": "Run", "label": "Easy long run", "time": "60 min", "detail": "60 min continuous @ 5:54 min/km · Zone 1."}]}}, {"n": 7, "dates": "Oct 26–Nov 1", "phase": "Build 2", "hours": 14.8, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "80 min", "detail": "10x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "70 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 3x:\n1. Hard: 12 min @ 260W · Zone 3\n2. Recovery: 4 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:10 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "35 min", "detail": "Maintenance volume from here — 2 rounds."}], "WED": [{"sport": "Run", "label": "A pulso — key session", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "2. A pulso: 40 min @ 4:18 min/km · Zone 4", "cooldown": "3. Cool Down: 13 min @ 5:44 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "8x150m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "30 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "4:00", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 210 min @ 186W · Zone 2 steady with 3x15min @237W (Z3)\n3. Cool down: 15 min @ 118W · Zone 1\nFull race-nutrition rehearsal."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "100 min", "detail": "75 min continuous @ 5:44 min/km · Zone 1, last 25 min @ 4:36 min/km · Zone 3."}, {"sport": "Swim", "label": "Easy swim", "time": "25 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 8, "dates": "Nov 2–8", "phase": "Build 2", "hours": 15.2, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "85 min", "detail": "12x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "70 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 3x:\n1. Hard: 15 min @ 260W · Zone 3\n2. Recovery: 3 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:10 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "35 min", "detail": "2 rounds."}], "WED": [{"sport": "Run", "label": "Threshold repeats", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:08 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 10 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "10x150m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "30 min", "detail": "2 rounds."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride — biggest of the plan", "time": "4:15", "detail": "1. Warm up: 15 min @ 133W · Zone 1\n2. Main: 225 min @ 189W · Zone 2 steady with 4x12min @237W (Z3)\n3. Cool down: 15 min @ 118W · Zone 1"}], "SUN": [{"sport": "Run", "label": "Long run", "time": "100 min", "detail": "75 min continuous @ 5:44 min/km · Zone 1, last 25 min @ 4:36 min/km · Zone 3."}, {"sport": "Swim", "label": "Easy swim", "time": "25 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 9, "dates": "Nov 9–15", "phase": "Peak", "hours": 14.9, "days": {"MON": [{"sport": "Swim", "label": "Endurance, open water if possible", "time": "65 min", "detail": "Continuous 1500-1800m @ Z2-Z3 if you can get to open water."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "65 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 118W · Zone 1", "main": "Repeat 2x:\n1. Hard: 20 min @ 260W · Zone 3\n2. Recovery: 5 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 4:52 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "30 min", "detail": "2 rounds — trimming volume as we approach peak."}], "WED": [{"sport": "Run", "label": "Race-pace tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:35 min/km · Zone 1", "main": "2. Race pace: 25 min @ 4:06 min/km · Zone 5", "cooldown": "3. Cool Down: 20 min @ 5:44 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "Continuous 1200m @ Z2-Z3."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "25 min", "detail": "2 rounds, lighter loads."}], "FRI": [{"sport": "Run", "label": "Easy aerobic", "time": "55 min", "detail": "55 min continuous @ 5:44 min/km · Zone 1."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:30", "detail": "210 min @ 184W · Zone 2 steady — shorter than weeks 7-8 on purpose, this sets up Sunday's big day."}], "SUN": [{"sport": "Brick", "label": "Dress rehearsal — key session of the plan", "time": "~2:55 total", "detail": {"warmup": "1. Warm up (bike): 10 min @ 118W · Zone 1", "main": "2. Cycling @ race pace: 100 min @ 237W · Zone 3\n3. Quick transition\n4. Running @ race pace: 50 min @ 4:06 min/km · Zone 5", "cooldown": "5. Cool down: walk 10min. Hydrate + fuel exactly as you plan to on race day."}, "notes": "Same structure you used prepping for Cartagena in 2019 — find a spot with similar heat/humidity/terrain if you can. This single session tells you more than any number on this dashboard."}]}}, {"n": 10, "dates": "Nov 16–22", "phase": "Peak / Simulation", "hours": 8.9, "days": {"MON": [{"sport": "Swim", "label": "Open water practice", "time": "60 min", "detail": "With wetsuit and race goggles if possible, Z2-Z3 — remove every unknown before race day."}], "TUE": [{"sport": "Bike", "label": "Simulator: sharpening", "time": "50 min", "detail": {"warmup": "1. Warm up: 10 min @ 118W · Zone 1", "main": "Repeat 6x:\n1. Hard: 3 min @ 260W · Zone 3\n2. Recovery: 3 min @ 133W · Zone 1", "cooldown": "3. Cool Down: 5 min @ 118W · Zone 1"}}, {"sport": "Strength", "label": "Midday maintenance", "time": "25 min", "detail": "2 rounds, light."}], "WED": [{"sport": "Run", "label": "Race-pace intervals, short", "time": "50 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:06 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 8 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "35 min", "detail": "Easy continuous Z2, race-pace feel 200m x3 @ Z4."}], "THU": [{"sport": "Bike", "label": "VALS (shortened)", "time": "~2:00", "detail": "Vuelta a la Sabana, trimmed to protect legs — steady Z3, skip the hardest surges."}, {"sport": "Strength", "label": "Midday maintenance", "time": "20 min", "detail": "Light mobility circuit."}], "FRI": [{"sport": "Run", "label": "Easy shakeout", "time": "40 min", "detail": "40 min continuous @ 6:05 min/km · Zone 1."}], "SAT": [{"sport": "Brick", "label": "Half-distance simulation", "time": "~2:15 total", "detail": {"warmup": "1. Swim: 15min @ Z3 (1:48-1:41/100m), open water feel", "main": "2. Bike @ race effort: 90 min @ 231W · Zone 3\n3. Quick transition\n4. Run @ race pace: 30min @ 4:06 min/km · Zone 5", "cooldown": "5. Same wake-up time, same breakfast, same gear as race morning."}}], "SUN": [{"sport": "Run", "label": "Recovery", "time": "25 min", "optional": true, "detail": "Very easy Z1 jog or full rest — let Saturday's simulation absorb."}]}}, {"n": 11, "dates": "Nov 23–29", "phase": "Taper + Race", "hours": 6.4, "days": {"MON": [{"sport": "Swim", "label": "Easy, race-pace feel", "time": "30 min", "detail": "Short, easy Z1-Z2, a few race-pace efforts of 50-100m @ Z4. No fatigue, just feel."}], "TUE": [{"sport": "Bike", "label": "Openers", "time": "40 min", "detail": {"warmup": "1. Warm up: 15 min @ 118W · Zone 1", "main": "Repeat 4x:\n1. Hard: 1 min @ 260W · Zone 3\n2. Recovery: 3 min @ 118W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 118W · Zone 1"}}, {"sport": "Strength", "label": "Midday mobility", "time": "15 min", "detail": "Mobility only, no loaded strength this week."}], "WED": [{"sport": "Run", "label": "Short + strides", "time": "30 min", "detail": "Easy jog Z1 with 4x20sec @ 3:45 min/km · Zone 5 strides."}], "THU": [{"sport": "Rest", "label": "Rest or easy shakeout", "time": "0-25 min", "optional": true, "detail": "VALS drops this week — full taper. If restless, 25min very easy Z1 spin only."}], "FRI": [{"sport": "Rest", "label": "Travel / final prep", "time": "—", "detail": "Gear check, travel to Cartagena, short easy movement if needed."}], "SAT": [{"sport": "Rest", "label": "Race morning prep", "time": "—", "detail": "Lay out gear, confirm nutrition plan, early sleep."}], "SUN": [{"sport": "Race", "label": "RACE DAY — IRONMAN 70.3 Cartagena", "time": "Goal 4:28:00", "detail": "Swim 32:00 · T1 3:00 · Bike 2:20:00 · T2 3:00 · Run 1:30:00.", "notes": "This is what the last 79 days were for.", "raceDay": true}]}}];
+const WEEKS = [{"n": 1, "dates": "Sep 14–20", "phase": "Rebuild", "hours": 13.7, "days": {"MON": [{"sport": "Swim", "label": "Baseline test — 400m TT", "time": "50 min", "detail": "1. Warm up: 15min easy + drills\n2. Main: 400m all-out time trial (this recalibrates your swim pace)\n3. Cool down: 4x100m easy, 5min", "notes": "This number sets every swim pace in the rest of the plan — don't skip it."}], "TUE": [{"sport": "Bike", "label": "Simulator: tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 150W · Zone 1", "main": "2. Active: 30 min @ 237W · Zone 3", "cooldown": "3. Cool Down: 15 min @ 150W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 4 rounds: squat, knee extension, single-leg work, deadlift, calf raises, core finisher.", "notes": "Never run above Z2 the same day after this session."}], "WED": [{"sport": "Run", "label": "Trote progresivo", "time": "60 min", "detail": {"warmup": null, "main": "Ramp up in 6 steps:\n1. 2.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:10 min/km · Zone 2\n4. 2.00 km @ 4:52 min/km · Zone 2\n5. 2.00 km @ 4:36 min/km · Zone 3\n6. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "40 min", "detail": "Easy continuous Z2 (2:03-1:48/100m), technique focus."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride — steady strong pace with the group (Z3 sustained ~230-260W, surges into Z4-Z5 on rollers)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail optional", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "85 min", "detail": "85 min continuous @ 5:10 min/km · Zone 2."}]}}, {"n": 2, "dates": "Sep 21–27", "phase": "Rebuild", "hours": 13.7, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "55 min", "detail": "8x150m @ Z2 (2:03-1:48/100m), 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 150W · Zone 1", "main": "2. Active: 30 min @ 237W · Zone 3", "cooldown": "3. Cool Down: 15 min @ 150W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 4 rounds: squat, knee extension, single-leg work, deadlift, calf raises, core finisher."}], "WED": [{"sport": "Run", "label": "Cambios de ritmo", "time": "55 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:54 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 30sec @ 3:36 min/km · Zone 6\n2. Easy: 60sec @ 5:18 min/km · Zone 2\n3. Hard: 60sec @ 3:45 min/km · Zone 5\n4. Easy: 90sec @ 5:18 min/km · Zone 2\n5. Hard: 90sec @ 3:56 min/km · Zone 5\n6. Easy: 120sec @ 5:18 min/km · Zone 2", "cooldown": "1. Cool Down: 15 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "40 min", "detail": "Easy continuous Z2."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride — steady strong pace (Z3 sustained, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, mountain option", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "85 min", "detail": "85 min continuous @ 5:10 min/km · Zone 2."}]}}, {"n": 3, "dates": "Sep 28–Oct 4", "phase": "Build 1", "hours": 14.3, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "65 min", "detail": "7x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 12 min @ 150W · Zone 1", "main": "Repeat 3x:\n1. Hard: 8 min @ 281W · Zone 4\n2. Recovery: 4 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "15 min", "detail": "Straight off the bike: 15min @ 5:44 min/km · Zone 1 — legs will feel heavy, that's the point."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 4 rounds: squat, knee extension, single-leg work, deadlift, calf raises, core finisher."}], "WED": [{"sport": "Run", "label": "Trote progresivo — extended", "time": "65 min", "detail": {"warmup": null, "main": "Ramp up in 5 steps:\n1. 3.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:10 min/km · Zone 2\n4. 2.00 km @ 4:52 min/km · Zone 2\n5. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "6x100m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "90 min", "detail": "90 min continuous @ 5:10 min/km · Zone 2."}, {"sport": "Swim", "label": "Easy swim", "time": "30 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 4, "dates": "Oct 5–11", "phase": "Build 1", "hours": 14.6, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "75 min", "detail": "9x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 3x:\n1. Hard: 10 min @ 281W · Zone 4\n2. Recovery: 3 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 11 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "18 min", "detail": "18min @ 5:44 min/km · Zone 1 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 4 rounds: squat, knee extension, single-leg work, deadlift, calf raises, core finisher."}], "WED": [{"sport": "Run", "label": "Threshold repeats", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:08 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 10 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "8x100m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Run", "label": "Long run", "time": "90 min", "detail": "90 min continuous @ 5:10 min/km · Zone 2."}, {"sport": "Swim", "label": "Easy swim", "time": "30 min", "optional": true, "detail": "Only if legs feel fresh — easy Z1-Z2."}]}}, {"n": 5, "dates": "Oct 12–18", "phase": "Build 1", "hours": 14.5, "days": {"MON": [{"sport": "Swim", "label": "Endurance + technique", "time": "65 min", "detail": "Technique block + 10x150m @ Z2, 15s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: threshold intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 4x:\n1. Hard: 7 min @ 281W · Zone 4\n2. Recovery: 3 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:35 min/km · Zone 1 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 4 rounds: squat, knee extension, single-leg work, deadlift, calf raises, core finisher."}], "WED": [{"sport": "Run", "label": "Trote progresivo — extended", "time": "70 min", "detail": {"warmup": null, "main": "Ramp up in 5 steps:\n1. 3.00 km @ 5:54 min/km · Zone 1\n2. 2.00 km @ 5:31 min/km · Zone 1\n3. 2.00 km @ 5:02 min/km · Zone 2\n4. 2.00 km @ 4:42 min/km · Zone 3\n5. 1.00 km @ 4:08 min/km · Zone 5", "cooldown": "1. Cool Down: 1.00 km @ 6:53 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "6x150m @ Z2-Z3, 20s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Brick", "label": "Brick — bike + run", "time": "1:30 bike + 1:00 run", "detail": {"warmup": "1. Warm up (bike): 10 min @ 150W · Zone 1", "main": "2. Cycling @ steady effort: 80 min @ 201W · Zone 2\n3. Quick transition\n4. Running @ steady-to-moderate: 60 min @ 4:42 min/km · Zone 3", "cooldown": "5. Walk 10min, hydrate + fuel as you would on race day."}}]}}, {"n": 6, "dates": "Oct 19–25", "phase": "Build 1 — cutback", "hours": 10.7, "days": {"MON": [{"sport": "Swim", "label": "Easy technique", "time": "45 min", "detail": "Drills + easy swimming Z1-Z2, no big sets. Absorb 5 weeks of build."}], "TUE": [{"sport": "Bike", "label": "Simulator: easy tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 150W · Zone 1", "main": "2. Active: 20 min @ 231W · Zone 3", "cooldown": "3. Cool Down: 25 min @ 150W · Zone 1"}}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 3 rounds — same duration, lighter loads for the down week."}], "WED": [{"sport": "Run", "label": "Easy intervals", "time": "55 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:54 min/km · Zone 1", "main": "Repeat 3x:\n1. Hard: 30sec @ 3:30 min/km · Zone 6\n2. Easy: 150sec @ 5:18 min/km · Zone 2", "cooldown": "1. Cool Down: 15 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim — easy", "time": "35 min", "detail": "Easy continuous Z1-Z2."}], "THU": [{"sport": "Bike", "label": "VALS (easy version)", "time": "~1:30", "detail": "Vuelta a la Sabana, ridden easy this week — Z2-Z3 only, skip the surges."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, lighter loads, plus mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic", "time": "55 min", "detail": "55 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Easy ride", "time": "2:00", "detail": "120 min @ 172W · Zone 2 — Z1-Z2 only, no intervals. Recovery week."}], "SUN": [{"sport": "Run", "label": "Easy long run", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}]}}, {"n": 7, "dates": "Oct 26–Nov 1", "phase": "Build 2", "hours": 14.7, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "80 min", "detail": "10x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 3x:\n1. Hard: 10 min @ 260W · Zone 3\n2. Recovery: 3 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 11 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:10 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 3 rounds, lighter loads — maintenance from here, not building strength volume further."}], "WED": [{"sport": "Run", "label": "A pulso — key session", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "2. A pulso: 40 min @ 4:18 min/km · Zone 4", "cooldown": "3. Cool Down: 13 min @ 5:44 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "8x150m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Brick", "label": "Brick — bike + run", "time": "1:30 bike + 1:00 run", "detail": {"warmup": "1. Warm up (bike): 10 min @ 150W · Zone 1", "main": "2. Cycling @ steady effort: 80 min @ 201W · Zone 2\n3. Quick transition\n4. Running @ steady-to-moderate: 60 min @ 4:42 min/km · Zone 3", "cooldown": "5. Walk 10min, hydrate + fuel as you would on race day."}}]}}, {"n": 8, "dates": "Nov 2–8", "phase": "Build 2", "hours": 14.8, "days": {"MON": [{"sport": "Swim", "label": "Endurance building", "time": "85 min", "detail": "12x200m @ Z2, 20s rest."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 3x:\n1. Hard: 10 min @ 260W · Zone 3\n2. Recovery: 3 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 11 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 5:10 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 3 rounds, lighter loads."}], "WED": [{"sport": "Run", "label": "Threshold repeats", "time": "65 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:08 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 10 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "10x150m @ Z2-Z3, 15s rest."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit as Tuesday, 3 rounds, plus 15min mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic, trail", "time": "60 min", "detail": "60 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Brick", "label": "Brick — bike + run", "time": "1:30 bike + 1:00 run", "detail": {"warmup": "1. Warm up (bike): 10 min @ 150W · Zone 1", "main": "2. Cycling @ steady effort: 80 min @ 201W · Zone 2\n3. Quick transition\n4. Running @ steady-to-moderate: 60 min @ 4:42 min/km · Zone 3", "cooldown": "5. Walk 10min, hydrate + fuel as you would on race day."}}]}}, {"n": 9, "dates": "Nov 9–15", "phase": "Peak", "hours": 13.6, "days": {"MON": [{"sport": "Swim", "label": "Endurance, open water if possible", "time": "65 min", "detail": "Continuous 1500-1800m @ Z2-Z3 if you can get to open water."}], "TUE": [{"sport": "Bike", "label": "Simulator: race-pace intervals", "time": "60 min + brick run", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 2x:\n1. Hard: 15 min @ 260W · Zone 3\n2. Recovery: 5 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Brick transition run", "time": "20 min", "detail": "20min @ 4:52 min/km · Zone 2 off the bike."}, {"sport": "Strength", "label": "Midday circuit", "time": "60 min", "detail": "Full circuit, 3 rounds, lighter loads — trimming intensity, not duration, as we approach peak."}], "WED": [{"sport": "Run", "label": "Race-pace tempo", "time": "60 min", "detail": {"warmup": "1. Warm up: 15 min @ 5:35 min/km · Zone 1", "main": "2. Race pace: 25 min @ 4:06 min/km · Zone 5", "cooldown": "3. Cool Down: 20 min @ 5:44 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "40 min", "detail": "Continuous 1200m @ Z2-Z3."}], "THU": [{"sport": "Bike", "label": "VALS", "time": "~2:30", "detail": "Vuelta a la Sabana group ride, steady strong pace (Z3, surges Z4-Z5)."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit, 3 rounds, lighter loads, plus mobility/stretching to close."}], "FRI": [{"sport": "Run", "label": "Easy aerobic", "time": "55 min", "detail": "55 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Bike", "label": "Long ride", "time": "3:15", "detail": "1. Warm up: 15 min @ 150W · Zone 1\n2. Main: 165 min @ 186W · Zone 2 steady, with 3x10min @237W (Zone 3) mixed in\n3. Cool down: 15 min @ 150W · Zone 1\nPractice race nutrition throughout."}], "SUN": [{"sport": "Brick", "label": "Dress rehearsal — key session of the plan", "time": "2:00 bike + 50 min run", "detail": {"warmup": "1. Warm up (bike): 10 min @ 150W · Zone 1", "main": "2. Cycling @ race pace: 100 min @ 237W · Zone 3\n3. Quick transition\n4. Running @ race pace: 50 min @ 4:06 min/km · Zone 5", "cooldown": "5. Cool down: walk 10min. Hydrate + fuel exactly as you plan to on race day."}, "notes": "Same structure you used prepping for Cartagena in 2019 — find a spot with similar heat/humidity/terrain if you can. This single session tells you more than any number on this dashboard."}]}}, {"n": 10, "dates": "Nov 16–22", "phase": "Peak / Simulation", "hours": 10.2, "days": {"MON": [{"sport": "Swim", "label": "Open water practice", "time": "60 min", "detail": "With wetsuit and race goggles if possible, Z2-Z3 — remove every unknown before race day."}], "TUE": [{"sport": "Bike", "label": "Simulator: sharpening", "time": "50 min", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 6x:\n1. Hard: 3 min @ 260W · Zone 3\n2. Recovery: 3 min @ 150W · Zone 1", "cooldown": "3. Cool Down: 5 min @ 150W · Zone 1"}}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Same circuit, 2 rounds light loads, plus 25min mobility/stretching to close."}], "WED": [{"sport": "Run", "label": "Race-pace intervals, short", "time": "50 min", "detail": {"warmup": "1. Warm up: 12 min @ 5:44 min/km · Zone 1", "main": "Repeat 4x:\n1. Hard: 1.5 km @ 4:06 min/km · Zone 5\n2. Recovery: 2 min @ 5:31 min/km · Zone 1", "cooldown": "3. Cool Down: 8 min @ 5:54 min/km · Zone 1"}}, {"sport": "Swim", "label": "Second swim", "time": "35 min", "detail": "Easy continuous Z2, race-pace feel 200m x3 @ Z4."}], "THU": [{"sport": "Bike", "label": "VALS (shortened)", "time": "~2:00", "detail": "Vuelta a la Sabana, trimmed to protect legs — steady Z3, skip the hardest surges."}, {"sport": "Strength", "label": "Midday maintenance", "time": "60 min", "detail": "Light circuit, 2 rounds, plus 30min mobility/stretching — protecting legs this close to the race."}], "FRI": [{"sport": "Run", "label": "Easy shakeout", "time": "40 min", "detail": "40 min continuous @ 5:10 min/km · Zone 2."}], "SAT": [{"sport": "Brick", "label": "Half-distance simulation", "time": "~2:15 total", "detail": {"warmup": "1. Swim: 15min @ Z3 (1:48-1:41/100m), open water feel", "main": "2. Bike @ race effort: 90 min @ 231W · Zone 3\n3. Quick transition\n4. Run @ race pace: 30min @ 4:06 min/km · Zone 5", "cooldown": "5. Same wake-up time, same breakfast, same gear as race morning."}}], "SUN": [{"sport": "Run", "label": "Recovery", "time": "25 min", "optional": true, "detail": "Very easy Z1 jog or full rest — let Saturday's simulation absorb."}]}}, {"n": 11, "dates": "Nov 23–29", "phase": "Taper + Race", "hours": 8.7, "days": {"MON": [{"sport": "Bike", "label": "Taper reps", "time": "50 min", "detail": {"warmup": "1. Warm up: 10 min @ 150W · Zone 1", "main": "Repeat 4x:\n1. Hard: 3 min @ 281W · Zone 4\n2. Recovery: 4 min @ 163W · Zone 1", "cooldown": "3. Cool Down: 10 min @ 150W · Zone 1"}}], "TUE": [{"sport": "Swim", "label": "20x100 taper reps", "time": "40 min", "detail": "1. Warm up: 400m easy Zone 1-2\n2. Main: 20 x 100m @ Zone 4 (1:40/100m), 5sec rest\n3. Cool down: 600m easy Zone 1"}], "WED": [{"sport": "Bike", "label": "Taper reps", "time": "45 min", "detail": {"warmup": "1. Warm up: 15 min @ 150W · Zone 1", "main": "Repeat 2x:\n1. Hard: 90 sec @ 326W · Zone 5\n2. Recovery: 3:30 min @ 163W · Zone 1", "cooldown": "3. Cool Down: 20 min @ 150W · Zone 1"}}, {"sport": "Run", "label": "Taper reps", "time": "30 min", "detail": {"warmup": "1. Warm up: 10 min @ 5:31 min/km · Zone 1", "main": "Repeat 2x:\n1. Hard: 90 sec @ 3:45 min/km · Zone 5\n2. Easy: 3:30 min @ 5:10 min/km · Zone 2", "cooldown": "3. Cool Down: 10 min @ 5:31 min/km · Zone 1"}}], "THU": [{"sport": "Rest", "label": "Full rest", "time": "—", "detail": "Matches your 2019 taper exactly — nothing logged this day. Let the taper reps from Mon-Wed absorb."}], "FRI": [{"sport": "Run", "label": "Easy shakeout", "time": "20 min", "detail": "Very easy continuous @ 5:54 min/km · Zone 1. Matches your 2019 pre-race shakeout."}, {"sport": "Swim", "label": "Easy activation", "time": "15 min", "detail": "Short, easy, technique-only. Just moving, no fatigue."}], "SAT": [{"sport": "Bike", "label": "Easy opener spin", "time": "40 min", "detail": "Very easy continuous 40 min @ 150W · Zone 1. Matches your 2019 pre-race spin — almost no load, just legs turning."}, {"sport": "Swim", "label": "Easy activation", "time": "15 min", "detail": "Short, easy, a few race-pace strokes to feel sharp. No fatigue."}], "SUN": [{"sport": "Race", "label": "RACE DAY — IRONMAN 70.3 Cartagena", "time": "Goal 4:28:00", "detail": "Swim 32:00 · T1 3:00 · Bike 2:20:00 · T2 3:00 · Run 1:30:00.", "notes": "This is what the last 79 days were for.", "raceDay": true}]}}];
 
 function renderWeeks(){
   document.getElementById('weeks-container').innerHTML = WEEKS.map(w=>{
