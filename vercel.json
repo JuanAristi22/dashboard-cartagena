@@ -1,7 +1,12 @@
 {
   "functions": {
-    "api/sync-strava.js": { "maxDuration": 60 },
-    "api/sync-whoop.js": { "maxDuration": 60 },
-    "api/calc-pmc.js": { "maxDuration": 30 }
-  }
+    "api/sync-strava.js": { "maxDuration": 30 },
+    "api/sync-whoop.js": { "maxDuration": 30 },
+    "api/calc-pmc.js": { "maxDuration": 30 },
+    "api/sync.js": { "maxDuration": 30 }
+  },
+  "crons": [
+    { "path": "/api/sync", "schedule": "0 12 * * *" },
+    { "path": "/api/sync", "schedule": "0 23 * * *" }
+  ]
 }
