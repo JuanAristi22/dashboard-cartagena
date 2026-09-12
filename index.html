@@ -723,13 +723,6 @@ function toPmcSeries(rows){
   return rows.map(r => [r.date, Number(r.ctl), Number(r.atl), Number(r.tsb)]);
 }
 
-function toWhoopSeries(cycles, recovery){
-  const byCycle = new Map(recovery.map(r => [r.cycle_id, r]));
-  return cycles
-    .filter(c => byCycle.has(c.external_id))
-    .map(c => [c.start_at.slice(0,10), Number(byCycle.get(c.external_id).recovery_score), Number(c.strain)]);
-}
-
 function toHoursData(activities){
   return activities.map(a => [
     (a.start_date_local || a.start_date).slice(0,10),
@@ -777,10 +770,11 @@ function computeWeeklyHealth(recovery, cycles, sleepRows){
   }));
 
   return {
-    rhr: { curr: avgField(curr,'resting_heart_rate') ?? 0, prev: avgField(prev,'resting_heart_rate') ?? 0 },
-    hrv: { curr: avgField(curr,'hrv_rmssd_milli') ?? 0, prev: avgField(prev,'hrv_rmssd_milli') ?? 0 },
-    sleep: { curr: avgSleepHours(curr) ?? 0, prev: avgSleepHours(prev) ?? 0 },
-    sleepPct: { curr: avgSleepPct(curr) ?? 0, prev: avgSleepPct(prev) ?? 0 },
+    recovery: { curr: avgField(curr,'recovery_score') ?? 0, prev: avgField(prev,'recovery_score') },
+    rhr: { curr: avgField(curr,'resting_heart_rate') ?? 0, prev: avgField(prev,'resting_heart_rate') },
+    hrv: { curr: avgField(curr,'hrv_rmssd_milli') ?? 0, prev: avgField(prev,'hrv_rmssd_milli') },
+    sleep: { curr: avgSleepHours(curr) ?? 0, prev: avgSleepHours(prev) },
+    sleepPct: { curr: avgSleepPct(curr) ?? 0, prev: avgSleepPct(prev) },
   };
 }
 
@@ -788,7 +782,6 @@ const live = await fetchLiveData();
 
 const stravaPmc = toPmcSeries(live.pmc);
 const pmc = stravaPmc; // no separate TrainingPeaks source yet -- both point at the same real, Strava-derived series
-const whoop = toWhoopSeries(live.cycles, live.recovery);
 const hoursData = toHoursData(live.activities);
 const WEEKLY_HEALTH = computeWeeklyHealth(live.recovery, live.cycles, live.sleep);
 
@@ -1001,11 +994,6 @@ function hoursInRange(start,end){
   });
   return { total, bySport };
 }
-function whoopAvgInRange(start,end){
-  const rows = whoop.filter(w=>{ const d=toDate(w[0]); return d>=start && d<=end; });
-  if(!rows.length) return null;
-  return rows.reduce((a,w)=>a+w[1],0)/rows.length;
-}
 function ctlAt(dateLimit){
   const rows = stravaPmc.filter(p=> toDate(p[0]) <= dateLimit);
   return rows.length ? rows[rows.length-1][1] : null;
@@ -1037,9 +1025,6 @@ function renderMetrics(){
   }
   const maxSport = sportEntries.length ? sportEntries[0][1] : 1;
 
-  const whoopCur = whoopAvgInRange(p.start, p.end);
-  const whoopPrev = whoopAvgInRange(p.prevStart, p.prevEnd);
-
   const ctlCur = ctlAt(p.end);
   const ctlStart = ctlAt(p.start);
 
@@ -1064,8 +1049,8 @@ function renderMetrics(){
 
   const healthCards = [
     {
-      k:'WHOOP RECOVERY', v: whoopCur!==null? whoopCur.toFixed(0)+'%' : '—', dot:'#5FB77E',
-      d: deltaBadge(whoopCur, p.prevStart>=toDate('2026-06-01')?whoopPrev:null),
+      k:'WHOOP RECOVERY', v: WEEKLY_HEALTH.recovery.curr.toFixed(0)+'%', dot:'#5FB77E',
+      d: deltaBadge(WEEKLY_HEALTH.recovery.curr, WEEKLY_HEALTH.recovery.prev, false),
       g:GLOSS.whoop
     },
     {
