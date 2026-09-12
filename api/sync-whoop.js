@@ -76,9 +76,9 @@ export default async function handler(req, res) {
     const start = new Date(Date.now() - days * 86400000).toISOString();
 
     const [cyclesRes, recoveryRes, sleepRes] = await Promise.all([
-      fetchWhoop('/v2/cycle', accessToken, { start, limit: 50 }),
-      fetchWhoop('/v2/recovery', accessToken, { start, limit: 50 }),
-      fetchWhoop('/v2/activity/sleep', accessToken, { start, limit: 50 }),
+      fetchWhoop('/v2/cycle', accessToken, { start, limit: 25 }),
+      fetchWhoop('/v2/recovery', accessToken, { start, limit: 25 }),
+      fetchWhoop('/v2/activity/sleep', accessToken, { start, limit: 25 }),
     ]);
 
     const cycles = (cyclesRes.records || []).map(mapCycle);
