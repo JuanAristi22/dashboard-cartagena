@@ -32,3 +32,33 @@ export function getWorkoutForDate(dateStr, year = new Date(dateStr).getUTCFullYe
   }
   return null;
 }
+
+// Flattens every block in the plan into one list, each with its real calendar date and a
+// stable (week_n, dow, block_index) identity -- used to track completion against Strava.
+// Excludes Rest and Race days (nothing to compare those against).
+export function getAllPlannedBlocks(year = 2026) {
+  const out = [];
+  for (const week of WEEKS) {
+    const start = weekStartDate(week, year);
+    if (!start) continue;
+    for (const dow of DOW_ORDER) {
+      const blocks = week.days[dow] || [];
+      blocks.forEach((b, block_index) => {
+        if (b.sport === 'Rest' || b.raceDay) return;
+        const date = new Date(start);
+        date.setUTCDate(date.getUTCDate() + DOW_ORDER.indexOf(dow));
+        out.push({
+          week_n: week.n,
+          dow,
+          block_index,
+          date: date.toISOString().slice(0, 10),
+          sport: b.sport,
+          label: b.label,
+          time: b.time,
+          optional: !!b.optional,
+        });
+      });
+    }
+  }
+  return out;
+}

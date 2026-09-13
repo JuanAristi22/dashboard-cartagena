@@ -3,14 +3,15 @@ import { getValidAccessToken as getValidWhoopToken } from './whoop.js';
 import { syncStravaWindow } from './strava-sync.js';
 import { syncWhoopWindow } from './whoop-sync.js';
 import { recomputePmc } from './pmc-calc.js';
+import { computePlanCompletion } from './plan-tracking.js';
 
-// Recent Strava activities -> recompute CTL/ATL/TSB -> recent Whoop data, in one call.
-// Each section is independent: if one token has gone stale, the others still update, and
-// errors are collected rather than thrown so a partial failure still returns something
-// useful. Used by both /api/sync (secret-gated, for cron) and /api/trigger-sync (public,
-// for the dashboard's manual button).
+// Recent Strava activities -> recompute CTL/ATL/TSB -> recent Whoop data -> re-check plan
+// completion (green/yellow/red), in one call. Each section is independent: if one token has
+// gone stale, the others still update, and errors are collected rather than thrown so a
+// partial failure still returns something useful. Used by both /api/sync (secret-gated, for
+// cron) and /api/trigger-sync (public, for the dashboard's manual button).
 export async function runFullSync(supabase) {
-  const result = { ok: true, strava: null, pmc: null, whoop: null, errors: [] };
+  const result = { ok: true, strava: null, pmc: null, whoop: null, planCompletion: null, errors: [] };
 
   try {
     const stravaToken = await getValidStravaToken(supabase);
@@ -33,6 +34,13 @@ export async function runFullSync(supabase) {
   } catch (err) {
     console.error('Whoop sync failed:', err);
     result.errors.push({ step: 'whoop', message: err.message });
+  }
+
+  try {
+    result.planCompletion = await computePlanCompletion(supabase);
+  } catch (err) {
+    console.error('Plan completion check failed:', err);
+    result.errors.push({ step: 'planCompletion', message: err.message });
   }
 
   if (result.errors.length) result.ok = false;
