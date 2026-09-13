@@ -23,6 +23,25 @@ function addDaysStr(dateStr, days) {
   return d.toISOString().slice(0, 10);
 }
 
+// Renders a block's full prescription: either a plain string, or a
+// {warmup, main, cooldown} structure (same shape the dashboard renders).
+function formatDetail(detail) {
+  if (!detail) return '';
+  if (typeof detail === 'string') return detail;
+  const parts = [];
+  if (detail.warmup) parts.push(`Warm up: ${detail.warmup}`);
+  if (detail.main) parts.push(`Main: ${detail.main}`);
+  if (detail.cooldown) parts.push(`Cool down: ${detail.cooldown}`);
+  return parts.join('\n');
+}
+
+function formatBlock(b) {
+  const header = `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`;
+  const detail = formatDetail(b.detail);
+  const notes = b.notes ? `\nNota: ${b.notes}` : '';
+  return [header, detail, notes].filter(Boolean).join('\n');
+}
+
 async function replyForDate(chatId, dateStr, label) {
   const result = getWorkoutForDate(dateStr);
   if (!result) {
@@ -33,10 +52,11 @@ async function replyForDate(chatId, dateStr, label) {
     await sendTelegramMessage(chatId, `${label} (${result.dow}) es día de descanso 🛌`);
     return;
   }
-  const lines = result.blocks.map(
-    (b) => `• ${b.sport} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`
+  const sections = result.blocks.map(formatBlock);
+  await sendTelegramMessage(
+    chatId,
+    `📅 ${label} (${result.dow}, semana ${result.week.n}):\n\n${sections.join('\n\n')}`
   );
-  await sendTelegramMessage(chatId, `📅 ${label} (${result.dow}, semana ${result.week.n}):\n\n${lines.join('\n')}`);
 }
 
 async function replyPlan(supabase, chatId) {
