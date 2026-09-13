@@ -4,9 +4,7 @@ import { syncWhoopWindow } from './_lib/whoop-sync.js';
 import { checkSyncAuth } from './_lib/auth.js';
 import { evaluateReadiness, adjustBlocks } from './_lib/readiness-rules.js';
 import { getWorkoutForDate } from './_lib/training-plan.js';
-import { sendEmail } from './_lib/email.js';
-
-const ALERT_EMAIL_TO = process.env.ALERT_EMAIL_TO || 'juan@tnc.com.co';
+import { sendTelegramMessage } from './_lib/telegram.js';
 
 function average(nums) {
   const valid = nums.filter((n) => n != null);
@@ -39,35 +37,60 @@ async function fetchRecentRecovery(supabase, days) {
   }));
 }
 
-function buildEmailHtml({ todayStr, brokenRules, workout }) {
-  const rulesHtml = brokenRules.map((r) => `<li>${r.message}</li>`).join('');
-  const workoutHtml = workout?.blocks?.length
-    ? workout.blocks
-        .map(
-          (b) =>
-            `<li><b>${b.sport}</b> — ${b.label} (${b.time}). Ajustado: ${b.adjustedNote}</li>`
-        )
-        .join('')
-    : '<li>No hay sesión programada hoy en el plan.</li>';
-
-  return `
-    <div style="font-family:sans-serif; max-width:560px">
-      <h2>⚠️ Ajuste en tu entrenamiento de hoy — ${todayStr}</h2>
-      <p><b>Reglas que se activaron:</b></p>
-      <ul>${rulesHtml}</ul>
-      <p><b>Entrenamiento de hoy (ajustado a 80-90%):</b></p>
-      <ul>${workoutHtml}</ul>
-      <p style="color:#666;font-size:13px">Generado automáticamente por el chequeo de readiness de tu dashboard.</p>
-    </div>
-  `;
+async function fetchLastSleepPerformance(supabase) {
+  const { data, error } = await supabase
+    .from('whoop_sleep')
+    .select('sleep_performance_percentage')
+    .eq('nap', false)
+    .order('start_at', { ascending: false })
+    .limit(1);
+  if (error) throw error;
+  return data[0]?.sleep_performance_percentage ?? null;
 }
 
-// Runs every morning (cron): pulls fresh Whoop data, checks 3 readiness rules against a
-// 7-day baseline, and — only if one breaks — emails a suggested 80-90% adjustment for
-// today's planned session. Sends nothing when all rules pass.
+function formatBlockLine(b) {
+  return `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`;
+}
+
+function buildOkMessage({ todayStr, workout }) {
+  const lines = [`✅ Buenos días — ${todayStr}. Tus datos de Whoop están bien, seguimos el plan tal cual:`, ''];
+  if (workout?.blocks?.length) {
+    lines.push(...workout.blocks.map(formatBlockLine));
+  } else {
+    lines.push('Hoy es día de descanso 🛌');
+  }
+  return lines.join('\n');
+}
+
+function buildAlertMessage({ todayStr, brokenRules, adjustedBlocks }) {
+  const lines = [`⚠️ Buenos días — ${todayStr}. Algo en tus datos de Whoop pide atención:`, ''];
+  lines.push(...brokenRules.map((r) => `• ${r.message}`));
+  lines.push('');
+  if (adjustedBlocks.length) {
+    lines.push('Entrenamiento de hoy, ajustado a 80-90%:');
+    lines.push(...adjustedBlocks.map((b) => `${formatBlockLine(b)}\n  → ${b.adjustedNote}`));
+  } else {
+    lines.push('Hoy no hay sesión programada.');
+  }
+  lines.push('');
+  lines.push('¿Bajamos hoy la intensidad?');
+  return lines.join('\n');
+}
+
+// Runs every weekday morning (cron, 5am Cartagena time): pulls fresh Whoop data, checks 4
+// readiness rules (RHR, fatigue vs fitness, HRV, sleep) against recent history, and messages
+// the athlete on Telegram either way -- "you're good, plan as-is" or an adjusted 80-90%
+// version with Sí/No buttons. The athlete's tap is handled by telegram-webhook.js, which
+// updates the readiness_pending row this creates.
 export default async function handler(req, res) {
   if (!checkSyncAuth(req)) {
     res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) {
+    res.status(500).json({ ok: false, error: 'TELEGRAM_CHAT_ID not set' });
     return;
   }
 
@@ -79,6 +102,7 @@ export default async function handler(req, res) {
 
     const recent = await fetchRecentRecovery(supabase, 8);
     const [today, yesterday, ...baseline] = recent;
+    const lastSleepPerformance = await fetchLastSleepPerformance(supabase);
 
     const weeklyAvgRHR = average(baseline.map((d) => d?.resting_heart_rate));
     const weeklyAvgHRV = average(baseline.map((d) => d?.hrv_rmssd_milli));
@@ -99,26 +123,45 @@ export default async function handler(req, res) {
       todayHRV: today?.hrv_rmssd_milli ?? null,
       yesterdayHRV: yesterday?.hrv_rmssd_milli ?? null,
       weeklyAvgHRV,
+      lastSleepPerformance,
     });
 
     const todayStr = new Date().toISOString().slice(0, 10);
+    const workout = getWorkoutForDate(todayStr);
 
     if (!brokenRules.length) {
-      res.status(200).json({ ok: true, alertSent: false, checked: { today, weeklyAvgRHR, weeklyAvgHRV, latestPmc } });
+      await sendTelegramMessage(chatId, buildOkMessage({ todayStr, workout }));
+      res.status(200).json({ ok: true, alertSent: false, checked: { today, weeklyAvgRHR, weeklyAvgHRV, lastSleepPerformance, latestPmc } });
       return;
     }
 
-    const workout = getWorkoutForDate(todayStr);
     const adjustedBlocks = workout ? adjustBlocks(workout.blocks) : [];
-    const html = buildEmailHtml({ todayStr, brokenRules, workout: { blocks: adjustedBlocks } });
+    const text = buildAlertMessage({ todayStr, brokenRules, adjustedBlocks });
 
-    await sendEmail({
-      to: ALERT_EMAIL_TO,
-      subject: `⚠️ Ajuste en tu entrenamiento de hoy — ${todayStr}`,
-      html,
+    const sent = await sendTelegramMessage(chatId, text, {
+      buttons: [
+        [
+          { text: '✅ Sí, bajar a 80%', data: `readiness:accept:${todayStr}` },
+          { text: '❌ No, sigo al 100%', data: `readiness:decline:${todayStr}` },
+        ],
+      ],
     });
 
-    res.status(200).json({ ok: true, alertSent: true, brokenRules, workout: adjustedBlocks });
+    const { error: upsertErr } = await supabase.from('readiness_pending').upsert(
+      {
+        check_date: todayStr,
+        chat_id: String(chatId),
+        message_id: sent?.message_id ?? null,
+        broken_rules: brokenRules,
+        adjusted_blocks: adjustedBlocks,
+        status: 'pending',
+        decided_at: null,
+      },
+      { onConflict: 'check_date' }
+    );
+    if (upsertErr) throw upsertErr;
+
+    res.status(200).json({ ok: true, alertSent: true, brokenRules, adjustedBlocks });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: err.message });

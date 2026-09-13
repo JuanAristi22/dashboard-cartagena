@@ -1,5 +1,5 @@
-// Three readiness rules, evaluated against a 7-day rolling baseline. Any one breaking
-// triggers the "reduce today's session to 80-90%" email.
+// Four readiness rules, evaluated against a 7-day rolling baseline. Any one breaking
+// triggers the "reduce today's session to 80-90%" alert.
 //
 // Rule 1 — Resting HR: today's RHR is more than 5 bpm above the weekly average.
 // Rule 2 — Fatigue vs Fitness: ATL exceeds CTL by more than 20 points (TSB < -20).
@@ -9,7 +9,18 @@
 // Rule 3 — HRV: today's HRV is more than 6ms below the weekly average, AND yesterday's
 //   HRV was also more than 6ms below that same average (two consecutive days; one bad
 //   day alone does not trigger it).
-export function evaluateReadiness({ todayRHR, weeklyAvgRHR, ctl, atl, todayHRV, yesterdayHRV, weeklyAvgHRV }) {
+// Rule 4 — Sleep: last night's sleep performance was below 50% of target. Unlike the other
+//   rules this isn't compared to a baseline — one very bad night is reason enough on its own.
+export function evaluateReadiness({
+  todayRHR,
+  weeklyAvgRHR,
+  ctl,
+  atl,
+  todayHRV,
+  yesterdayHRV,
+  weeklyAvgHRV,
+  lastSleepPerformance,
+}) {
   const broken = [];
 
   if (todayRHR != null && weeklyAvgRHR != null && todayRHR - weeklyAvgRHR > 5) {
@@ -36,6 +47,13 @@ export function evaluateReadiness({ todayRHR, weeklyAvgRHR, ctl, atl, todayHRV, 
     broken.push({
       rule: 'hrv_drop',
       message: `HRV lleva 2 días seguidos más de 6ms por debajo del promedio semanal (hoy: ${todayHRV.toFixed(0)}ms, ayer: ${yesterdayHRV.toFixed(0)}ms, promedio: ${weeklyAvgHRV.toFixed(0)}ms).`,
+    });
+  }
+
+  if (lastSleepPerformance != null && lastSleepPerformance < 50) {
+    broken.push({
+      rule: 'poor_sleep',
+      message: `Dormiste muy poco anoche (${lastSleepPerformance.toFixed(0)}% del objetivo de sueño).`,
     });
   }
 

@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from './_lib/supabase.js';
-import { sendTelegramMessage } from './_lib/telegram.js';
+import { sendTelegramMessage, editMessageText, answerCallbackQuery } from './_lib/telegram.js';
 import { getWorkoutForDate, getCurrentWeek } from './_lib/training-plan.js';
 import { runFullSync } from './_lib/full-sync.js';
 
@@ -189,9 +189,57 @@ async function replyRecovery(supabase, chatId) {
   await sendTelegramMessage(chatId, lines.join('\n'));
 }
 
-// Telegram webhook: receives every message sent to the bot. Replies only to the owner's
-// chat (TELEGRAM_CHAT_ID) -- everyone else is silently ignored. If that env var isn't set
-// yet, replies to whoever writes with their chat ID, so the owner can grab it and set it.
+// Handles a tap on the Sí/No buttons sent by api/readiness-check.js. `data` looks like
+// "readiness:accept:2026-09-16" / "readiness:decline:2026-09-16". Idempotent: a second tap
+// on an already-decided row just gets a toast, the stored decision doesn't change.
+async function handleCallbackQuery(supabase, cbq) {
+  const chatId = cbq.message?.chat?.id;
+  const authorizedChatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId || !authorizedChatId || String(chatId) !== String(authorizedChatId)) {
+    await answerCallbackQuery(cbq.id);
+    return;
+  }
+
+  const [ns, action, checkDate] = (cbq.data || '').split(':');
+  if (ns !== 'readiness' || !checkDate) {
+    await answerCallbackQuery(cbq.id);
+    return;
+  }
+
+  const { data: pending, error } = await supabase
+    .from('readiness_pending')
+    .select('status')
+    .eq('check_date', checkDate)
+    .maybeSingle();
+  if (error) throw error;
+
+  if (!pending || pending.status !== 'pending') {
+    await answerCallbackQuery(cbq.id, 'Ya habías respondido esto.');
+    return;
+  }
+
+  const status = action === 'accept' ? 'accepted' : 'declined';
+  const { error: updateErr } = await supabase
+    .from('readiness_pending')
+    .update({ status, decided_at: new Date().toISOString() })
+    .eq('check_date', checkDate);
+  if (updateErr) throw updateErr;
+
+  const confirmLine =
+    status === 'accepted'
+      ? '✅ Confirmado: hoy vamos al 80-90%. (El envío automático al reloj/ciclocomputador todavía no está armado.)'
+      : '❌ Confirmado: seguimos al 100% como estaba.';
+  const originalText = cbq.message?.text || '';
+  if (cbq.message?.message_id) {
+    await editMessageText(chatId, cbq.message.message_id, `${originalText}\n\n${confirmLine}`);
+  }
+  await answerCallbackQuery(cbq.id, status === 'accepted' ? 'Ajustado a 80-90%' : 'Sigues al 100%');
+}
+
+// Telegram webhook: receives every message and button tap sent to the bot. Replies only to
+// the owner's chat (TELEGRAM_CHAT_ID) -- everyone else is silently ignored. If that env var
+// isn't set yet, replies to whoever writes with their chat ID, so the owner can grab it and
+// set it.
 export default async function handler(req, res) {
   if (process.env.TELEGRAM_WEBHOOK_SECRET) {
     const header = req.headers['x-telegram-bot-api-secret-token'];
@@ -199,6 +247,18 @@ export default async function handler(req, res) {
       res.status(401).json({ ok: false });
       return;
     }
+  }
+
+  const callbackQuery = req.body?.callback_query;
+  if (callbackQuery) {
+    try {
+      await handleCallbackQuery(getSupabaseAdmin(), callbackQuery);
+    } catch (err) {
+      console.error(err);
+      await answerCallbackQuery(callbackQuery.id, 'Error: ' + err.message);
+    }
+    res.status(200).json({ ok: true });
+    return;
   }
 
   const message = req.body?.message;
