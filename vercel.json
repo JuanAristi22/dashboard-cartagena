@@ -4,7 +4,8 @@
     "api/sync-whoop.js": { "maxDuration": 30 },
     "api/calc-pmc.js": { "maxDuration": 30 },
     "api/sync.js": { "maxDuration": 30 },
-    "api/readiness-check.js": { "maxDuration": 30 }
+    "api/readiness-check.js": { "maxDuration": 30 },
+    "api/telegram-webhook.js": { "maxDuration": 15 }
   },
   "crons": [
     { "path": "/api/sync", "schedule": "0 13 * * *" },

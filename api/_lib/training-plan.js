@@ -33,6 +33,18 @@ export function getWorkoutForDate(dateStr, year = new Date(dateStr).getUTCFullYe
   return null;
 }
 
+// Returns the WEEKS entry whose 7-day span contains dateStr, or null if outside the plan.
+export function getCurrentWeek(dateStr, year = new Date(dateStr).getUTCFullYear()) {
+  const target = new Date(dateStr + 'T00:00:00Z');
+  for (const week of WEEKS) {
+    const start = weekStartDate(week, year);
+    if (!start) continue;
+    const diffDays = Math.round((target - start) / 86400000);
+    if (diffDays >= 0 && diffDays <= 6) return week;
+  }
+  return null;
+}
+
 // Flattens every block in the plan into one list, each with its real calendar date and a
 // stable (week_n, dow, block_index) identity -- used to track completion against Strava.
 // Excludes Rest and Race days (nothing to compare those against).
