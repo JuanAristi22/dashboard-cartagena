@@ -1,32 +1,81 @@
 import { getSupabaseAdmin } from './_lib/supabase.js';
 import { sendTelegramMessage } from './_lib/telegram.js';
 import { getWorkoutForDate, getCurrentWeek } from './_lib/training-plan.js';
+import { runFullSync } from './_lib/full-sync.js';
 
 const HELP_TEXT =
   'Comandos disponibles:\n' +
   '/hoy — tu entrenamiento de hoy\n' +
+  '/manana — tu entrenamiento de mañana\n' +
+  '/plan — toda la semana actual, día por día\n' +
   '/semana — cómo vas esta semana (verde/amarillo/rojo)\n' +
   '/fitness — Fitness/Fatiga/Forma actual\n' +
-  '/recovery — tu último recovery, RHR, HRV y sueño de Whoop';
+  '/recovery — tu último recovery, RHR, HRV y sueño de Whoop\n' +
+  '/sync — sincroniza Strava/Whoop y recalcula todo ahora mismo';
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function replyToday(supabase, chatId) {
-  const result = getWorkoutForDate(todayStr());
+function addDaysStr(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+async function replyForDate(chatId, dateStr, label) {
+  const result = getWorkoutForDate(dateStr);
   if (!result) {
-    await sendTelegramMessage(chatId, 'Hoy está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).');
+    await sendTelegramMessage(chatId, `${label} está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).`);
     return;
   }
   if (!result.blocks.length) {
-    await sendTelegramMessage(chatId, `Hoy (${result.dow}) es día de descanso 🛌`);
+    await sendTelegramMessage(chatId, `${label} (${result.dow}) es día de descanso 🛌`);
     return;
   }
   const lines = result.blocks.map(
     (b) => `• ${b.sport} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`
   );
-  await sendTelegramMessage(chatId, `📅 Hoy (${result.dow}, semana ${result.week.n}):\n\n${lines.join('\n')}`);
+  await sendTelegramMessage(chatId, `📅 ${label} (${result.dow}, semana ${result.week.n}):\n\n${lines.join('\n')}`);
+}
+
+async function replyPlan(supabase, chatId) {
+  const week = getCurrentWeek(todayStr());
+  if (!week) {
+    await sendTelegramMessage(chatId, 'Hoy está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).');
+    return;
+  }
+  const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const sections = dayOrder.map((dow) => {
+    const blocks = (week.days[dow] || []).filter((b) => b.sport !== 'Rest');
+    if (!blocks.length) return `${dow}: descanso 🛌`;
+    const items = blocks
+      .map((b) => `${b.sport} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`)
+      .join('; ');
+    return `${dow}: ${items}`;
+  });
+  await sendTelegramMessage(
+    chatId,
+    `🗓️ Semana ${week.n} (${week.dates}) — ${week.phase}\n\n${sections.join('\n')}`
+  );
+}
+
+async function replySync(supabase, chatId) {
+  await sendTelegramMessage(chatId, '🔄 Sincronizando Strava, Whoop y recalculando el plan...');
+  const result = await runFullSync(supabase);
+
+  const parts = [];
+  if (result.strava) parts.push(`Strava: ${result.strava.upserted} actividades`);
+  if (result.pmc?.latest) parts.push(`Fitness ${result.pmc.latest.ctl} · Forma ${result.pmc.latest.tsb}`);
+  if (result.whoop) parts.push(`Whoop: ${result.whoop.recovery} recovery`);
+  if (result.planCompletion) parts.push(`Plan: ${result.planCompletion.evaluated} sesiones evaluadas`);
+
+  if (result.errors.length) {
+    const failed = result.errors.map((e) => e.step).join(', ');
+    await sendTelegramMessage(chatId, `⚠️ Sync parcial — falló: ${failed}\n\n${parts.join('\n')}`);
+  } else {
+    await sendTelegramMessage(chatId, `✅ Listo\n\n${parts.join('\n')}`);
+  }
 }
 
 async function replyWeek(supabase, chatId) {
@@ -160,13 +209,19 @@ export default async function handler(req, res) {
 
   try {
     if (text.startsWith('/hoy') || text.startsWith('/today')) {
-      await replyToday(supabase, chatId);
+      await replyForDate(chatId, todayStr(), 'Hoy');
+    } else if (text.startsWith('/manana') || text.startsWith('/mañana') || text.startsWith('/tomorrow')) {
+      await replyForDate(chatId, addDaysStr(todayStr(), 1), 'Mañana');
+    } else if (text.startsWith('/plan')) {
+      await replyPlan(supabase, chatId);
     } else if (text.startsWith('/semana') || text.startsWith('/week')) {
       await replyWeek(supabase, chatId);
     } else if (text.startsWith('/fitness')) {
       await replyFitness(supabase, chatId);
     } else if (text.startsWith('/recovery')) {
       await replyRecovery(supabase, chatId);
+    } else if (text.startsWith('/sync')) {
+      await replySync(supabase, chatId);
     } else {
       await sendTelegramMessage(chatId, HELP_TEXT);
     }
