@@ -4,14 +4,14 @@ import { getWorkoutForDate, getCurrentWeek } from './_lib/training-plan.js';
 import { runFullSync } from './_lib/full-sync.js';
 
 const HELP_TEXT =
-  'Comandos disponibles:\n' +
-  '/hoy — tu entrenamiento de hoy\n' +
-  '/manana — tu entrenamiento de mañana\n' +
-  '/plan — toda la semana actual, día por día\n' +
-  '/semana — cómo vas esta semana (verde/amarillo/rojo)\n' +
-  '/fitness — Fitness/Fatiga/Forma actual\n' +
-  '/recovery — tu último recovery, RHR, HRV y sueño de Whoop\n' +
-  '/sync — sincroniza Strava/Whoop y recalcula todo ahora mismo';
+  'Available commands:\n' +
+  "/hoy — today's session\n" +
+  "/manana — tomorrow's session\n" +
+  '/plan — the full week, day by day\n' +
+  '/semana — how this week is going (green/yellow/red)\n' +
+  '/fitness — current Fitness/Fatigue/Form\n' +
+  '/recovery — your latest Whoop recovery, RHR, HRV and sleep\n' +
+  '/sync — sync Strava/Whoop and recalculate everything right now';
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -36,72 +36,72 @@ function formatDetail(detail) {
 }
 
 function formatBlock(b) {
-  const header = `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`;
+  const header = `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [optional]' : ''}`;
   const detail = formatDetail(b.detail);
-  const notes = b.notes ? `\nNota: ${b.notes}` : '';
+  const notes = b.notes ? `\nNote: ${b.notes}` : '';
   return [header, detail, notes].filter(Boolean).join('\n');
 }
 
 async function replyForDate(chatId, dateStr, label) {
   const result = getWorkoutForDate(dateStr);
   if (!result) {
-    await sendTelegramMessage(chatId, `${label} está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).`);
+    await sendTelegramMessage(chatId, `${label} is outside the plan's range (11 weeks, Sep 14 – Nov 29).`);
     return;
   }
   if (!result.blocks.length) {
-    await sendTelegramMessage(chatId, `${label} (${result.dow}) es día de descanso 🛌`);
+    await sendTelegramMessage(chatId, `${label} (${result.dow}) is a rest day 🛌`);
     return;
   }
   const sections = result.blocks.map(formatBlock);
   await sendTelegramMessage(
     chatId,
-    `📅 ${label} (${result.dow}, semana ${result.week.n}):\n\n${sections.join('\n\n')}`
+    `📅 ${label} (${result.dow}, week ${result.week.n}):\n\n${sections.join('\n\n')}`
   );
 }
 
 async function replyPlan(supabase, chatId) {
   const week = getCurrentWeek(todayStr());
   if (!week) {
-    await sendTelegramMessage(chatId, 'Hoy está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).');
+    await sendTelegramMessage(chatId, "Today is outside the plan's range (11 weeks, Sep 14 – Nov 29).");
     return;
   }
   const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   const sections = dayOrder.map((dow) => {
     const blocks = (week.days[dow] || []).filter((b) => b.sport !== 'Rest');
-    if (!blocks.length) return `${dow}: descanso 🛌`;
+    if (!blocks.length) return `${dow}: rest 🛌`;
     const items = blocks
-      .map((b) => `${b.sport} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`)
+      .map((b) => `${b.sport} — ${b.label} (${b.time})${b.optional ? ' [optional]' : ''}`)
       .join('; ');
     return `${dow}: ${items}`;
   });
   await sendTelegramMessage(
     chatId,
-    `🗓️ Semana ${week.n} (${week.dates}) — ${week.phase}\n\n${sections.join('\n')}`
+    `🗓️ Week ${week.n} (${week.dates}) — ${week.phase}\n\n${sections.join('\n')}`
   );
 }
 
 async function replySync(supabase, chatId) {
-  await sendTelegramMessage(chatId, '🔄 Sincronizando Strava, Whoop y recalculando el plan...');
+  await sendTelegramMessage(chatId, '🔄 Syncing Strava, Whoop, and recalculating the plan...');
   const result = await runFullSync(supabase);
 
   const parts = [];
-  if (result.strava) parts.push(`Strava: ${result.strava.upserted} actividades`);
-  if (result.pmc?.latest) parts.push(`Fitness ${result.pmc.latest.ctl} · Forma ${result.pmc.latest.tsb}`);
+  if (result.strava) parts.push(`Strava: ${result.strava.upserted} activities`);
+  if (result.pmc?.latest) parts.push(`Fitness ${result.pmc.latest.ctl} · Form ${result.pmc.latest.tsb}`);
   if (result.whoop) parts.push(`Whoop: ${result.whoop.recovery} recovery`);
-  if (result.planCompletion) parts.push(`Plan: ${result.planCompletion.evaluated} sesiones evaluadas`);
+  if (result.planCompletion) parts.push(`Plan: ${result.planCompletion.evaluated} sessions evaluated`);
 
   if (result.errors.length) {
     const failed = result.errors.map((e) => e.step).join(', ');
-    await sendTelegramMessage(chatId, `⚠️ Sync parcial — falló: ${failed}\n\n${parts.join('\n')}`);
+    await sendTelegramMessage(chatId, `⚠️ Partial sync — failed: ${failed}\n\n${parts.join('\n')}`);
   } else {
-    await sendTelegramMessage(chatId, `✅ Listo\n\n${parts.join('\n')}`);
+    await sendTelegramMessage(chatId, `✅ Done\n\n${parts.join('\n')}`);
   }
 }
 
 async function replyWeek(supabase, chatId) {
   const week = getCurrentWeek(todayStr());
   if (!week) {
-    await sendTelegramMessage(chatId, 'Hoy está fuera del rango del plan (11 semanas, Sep 14 – Nov 29).');
+    await sendTelegramMessage(chatId, "Today is outside the plan's range (11 weeks, Sep 14 – Nov 29).");
     return;
   }
 
@@ -120,11 +120,11 @@ async function replyWeek(supabase, chatId) {
 
   await sendTelegramMessage(
     chatId,
-    `📆 Semana ${week.n} (${week.dates}) — ${week.phase}\n\n` +
-      `✅ ${counts.green} verde\n` +
-      `⚠️ ${counts.yellow} amarillo\n` +
-      `❌ ${counts.red} rojo\n` +
-      `⬜ ${pending} sin evaluar todavía`
+    `📆 Week ${week.n} (${week.dates}) — ${week.phase}\n\n` +
+      `✅ ${counts.green} green\n` +
+      `⚠️ ${counts.yellow} yellow\n` +
+      `❌ ${counts.red} red\n` +
+      `⬜ ${pending} not evaluated yet`
   );
 }
 
@@ -136,16 +136,16 @@ async function replyFitness(supabase, chatId) {
     .limit(1);
   if (error) throw error;
   if (!data.length) {
-    await sendTelegramMessage(chatId, 'Todavía no hay datos de Fitness calculados.');
+    await sendTelegramMessage(chatId, 'No Fitness data calculated yet.');
     return;
   }
   const row = data[0];
   await sendTelegramMessage(
     chatId,
-    `📊 Al ${row.date}:\n\n` +
+    `📊 As of ${row.date}:\n\n` +
       `Fitness (CTL): ${row.ctl}\n` +
-      `Fatiga (ATL): ${row.atl}\n` +
-      `Forma (TSB): ${row.tsb > 0 ? '+' : ''}${row.tsb}`
+      `Fatigue (ATL): ${row.atl}\n` +
+      `Form (TSB): ${row.tsb > 0 ? '+' : ''}${row.tsb}`
   );
 }
 
@@ -165,7 +165,7 @@ async function replyRecovery(supabase, chatId) {
   if (sleepErr) throw sleepErr;
 
   if (!cycles.length) {
-    await sendTelegramMessage(chatId, 'Todavía no hay datos de Whoop.');
+    await sendTelegramMessage(chatId, 'No Whoop data yet.');
     return;
   }
 
@@ -176,20 +176,20 @@ async function replyRecovery(supabase, chatId) {
     .maybeSingle();
   if (recErr) throw recErr;
 
-  const lines = [`💚 Al ${cycles[0].start_at.slice(0, 10)}:`, ''];
+  const lines = [`💚 As of ${cycles[0].start_at.slice(0, 10)}:`, ''];
   if (recovery) {
     lines.push(`Recovery: ${Math.round(recovery.recovery_score)}%`);
-    lines.push(`FC en reposo: ${Math.round(recovery.resting_heart_rate)} bpm`);
+    lines.push(`Resting HR: ${Math.round(recovery.resting_heart_rate)} bpm`);
     lines.push(`HRV: ${Math.round(recovery.hrv_rmssd_milli)} ms`);
   }
   lines.push(`Strain: ${Number(cycles[0].strain).toFixed(1)}`);
   if (sleep.length) {
-    lines.push(`Sueño: ${sleep[0].sleep_performance_percentage}% del objetivo (${sleep[0].start_at.slice(0, 10)})`);
+    lines.push(`Sleep: ${sleep[0].sleep_performance_percentage}% of target (${sleep[0].start_at.slice(0, 10)})`);
   }
   await sendTelegramMessage(chatId, lines.join('\n'));
 }
 
-// Handles a tap on the Sí/No buttons sent by api/readiness-check.js. `data` looks like
+// Handles a tap on the Yes/No buttons sent by api/readiness-check.js. `data` looks like
 // "readiness:accept:2026-09-16" / "readiness:decline:2026-09-16". Idempotent: a second tap
 // on an already-decided row just gets a toast, the stored decision doesn't change.
 async function handleCallbackQuery(supabase, cbq) {
@@ -214,7 +214,7 @@ async function handleCallbackQuery(supabase, cbq) {
   if (error) throw error;
 
   if (!pending || pending.status !== 'pending') {
-    await answerCallbackQuery(cbq.id, 'Ya habías respondido esto.');
+    await answerCallbackQuery(cbq.id, 'You already answered this.');
     return;
   }
 
@@ -227,13 +227,13 @@ async function handleCallbackQuery(supabase, cbq) {
 
   const confirmLine =
     status === 'accepted'
-      ? '✅ Confirmado: hoy vamos al 80-90%. (El envío automático al reloj/ciclocomputador todavía no está armado.)'
-      : '❌ Confirmado: seguimos al 100% como estaba.';
+      ? "✅ Confirmed: scaling back to 80-90% today. (Auto-push to the watch/bike computer isn't wired up yet.)"
+      : '❌ Confirmed: staying at 100% as planned.';
   const originalText = cbq.message?.text || '';
   if (cbq.message?.message_id) {
     await editMessageText(chatId, cbq.message.message_id, `${originalText}\n\n${confirmLine}`);
   }
-  await answerCallbackQuery(cbq.id, status === 'accepted' ? 'Ajustado a 80-90%' : 'Sigues al 100%');
+  await answerCallbackQuery(cbq.id, status === 'accepted' ? 'Scaled to 80-90%' : 'Staying at 100%');
 }
 
 // Telegram webhook: receives every message and button tap sent to the bot. Replies only to
@@ -273,7 +273,7 @@ export default async function handler(req, res) {
   if (!authorizedChatId) {
     await sendTelegramMessage(
       chatId,
-      `Bot no configurado todavía.\n\nTu chat ID es: ${chatId}\n\nPonlo en Vercel como la variable TELEGRAM_CHAT_ID y este bot solo te va a responder a ti.`
+      `Bot not configured yet.\n\nYour chat ID is: ${chatId}\n\nSet it in Vercel as the TELEGRAM_CHAT_ID variable and this bot will only reply to you.`
     );
     res.status(200).json({ ok: true });
     return;
@@ -289,9 +289,9 @@ export default async function handler(req, res) {
 
   try {
     if (text.startsWith('/hoy') || text.startsWith('/today')) {
-      await replyForDate(chatId, todayStr(), 'Hoy');
+      await replyForDate(chatId, todayStr(), 'Today');
     } else if (text.startsWith('/manana') || text.startsWith('/mañana') || text.startsWith('/tomorrow')) {
-      await replyForDate(chatId, addDaysStr(todayStr(), 1), 'Mañana');
+      await replyForDate(chatId, addDaysStr(todayStr(), 1), 'Tomorrow');
     } else if (text.startsWith('/plan')) {
       await replyPlan(supabase, chatId);
     } else if (text.startsWith('/semana') || text.startsWith('/week')) {

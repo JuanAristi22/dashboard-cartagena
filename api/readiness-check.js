@@ -6,6 +6,27 @@ import { evaluateReadiness, adjustBlocks } from './_lib/readiness-rules.js';
 import { getWorkoutForDate } from './_lib/training-plan.js';
 import { sendTelegramMessage } from './_lib/telegram.js';
 
+// Short, no-fluff lines for a clean-readings morning -- work ethic, not cheerleading.
+const GO_LINES = [
+  "Numbers are clean. No excuses today — put in the work.",
+  "Great days are built on days like this. Get after it.",
+  "This is what preparation looks like. Go execute.",
+  "Nothing standing between you and the work today.",
+];
+
+// Same tone for a scale-back morning -- respecting the data is part of the discipline,
+// not a break from it.
+const ADJUST_LINES = [
+  "Smart is part of hard. Protect the engine today so it's still running in November.",
+  "Pushing through bad signals isn't discipline, it's ego. Scale back, come back sharper.",
+  "Champions don't ignore data, they use it.",
+  "The work today is knowing when to hold back.",
+];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function average(nums) {
   const valid = nums.filter((n) => n != null);
   if (!valid.length) return null;
@@ -49,38 +70,38 @@ async function fetchLastSleepPerformance(supabase) {
 }
 
 function formatBlockLine(b) {
-  return `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`;
+  return `${b.sport.toUpperCase()} — ${b.label} (${b.time})${b.optional ? ' [optional]' : ''}`;
 }
 
 function buildOkMessage({ todayStr, workout }) {
-  const lines = [`✅ Buenos días — ${todayStr}. Tus datos de Whoop están bien, seguimos el plan tal cual:`, ''];
+  const lines = [`Morning, Juan.`, pick(GO_LINES), '', `Whoop numbers are clean — plan stands as-is for ${todayStr}:`, ''];
   if (workout?.blocks?.length) {
     lines.push(...workout.blocks.map(formatBlockLine));
   } else {
-    lines.push('Hoy es día de descanso 🛌');
+    lines.push('Rest day today 🛌');
   }
   return lines.join('\n');
 }
 
 function buildAlertMessage({ todayStr, brokenRules, adjustedBlocks }) {
-  const lines = [`⚠️ Buenos días — ${todayStr}. Algo en tus datos de Whoop pide atención:`, ''];
+  const lines = [`Morning, Juan.`, pick(ADJUST_LINES), '', `A few things in today's Whoop data need attention:`, ''];
   lines.push(...brokenRules.map((r) => `• ${r.message}`));
   lines.push('');
   if (adjustedBlocks.length) {
-    lines.push('Entrenamiento de hoy, ajustado a 80-90%:');
+    lines.push("Today's session, scaled to 80-90%:");
     lines.push(...adjustedBlocks.map((b) => `${formatBlockLine(b)}\n  → ${b.adjustedNote}`));
   } else {
-    lines.push('Hoy no hay sesión programada.');
+    lines.push('No session scheduled today.');
   }
   lines.push('');
-  lines.push('¿Bajamos hoy la intensidad?');
+  lines.push('Scale back today?');
   return lines.join('\n');
 }
 
 // Runs every weekday morning (cron, 5am Cartagena time): pulls fresh Whoop data, checks 4
 // readiness rules (RHR, fatigue vs fitness, HRV, sleep) against recent history, and messages
 // the athlete on Telegram either way -- "you're good, plan as-is" or an adjusted 80-90%
-// version with Sí/No buttons. The athlete's tap is handled by telegram-webhook.js, which
+// version with Yes/No buttons. The athlete's tap is handled by telegram-webhook.js, which
 // updates the readiness_pending row this creates.
 export default async function handler(req, res) {
   if (!checkSyncAuth(req)) {
@@ -141,8 +162,8 @@ export default async function handler(req, res) {
     const sent = await sendTelegramMessage(chatId, text, {
       buttons: [
         [
-          { text: '✅ Sí, bajar a 80%', data: `readiness:accept:${todayStr}` },
-          { text: '❌ No, sigo al 100%', data: `readiness:decline:${todayStr}` },
+          { text: '✅ Yes, scale to 80%', data: `readiness:accept:${todayStr}` },
+          { text: '❌ No, staying at 100%', data: `readiness:decline:${todayStr}` },
         ],
       ],
     });

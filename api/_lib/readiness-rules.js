@@ -26,14 +26,14 @@ export function evaluateReadiness({
   if (todayRHR != null && weeklyAvgRHR != null && todayRHR - weeklyAvgRHR > 5) {
     broken.push({
       rule: 'resting_hr',
-      message: `FC en reposo hoy (${todayRHR.toFixed(0)} bpm) está ${(todayRHR - weeklyAvgRHR).toFixed(1)} bpm por encima del promedio semanal (${weeklyAvgRHR.toFixed(0)} bpm).`,
+      message: `Resting HR today (${todayRHR.toFixed(0)} bpm) is ${(todayRHR - weeklyAvgRHR).toFixed(1)} bpm above your weekly average (${weeklyAvgRHR.toFixed(0)} bpm).`,
     });
   }
 
   if (ctl != null && atl != null && atl - ctl > 20) {
     broken.push({
       rule: 'fatigue_vs_fitness',
-      message: `Fatiga (ATL ${atl.toFixed(1)}) supera a Fitness (CTL ${ctl.toFixed(1)}) por ${(atl - ctl).toFixed(1)} puntos (Forma/TSB: ${(ctl - atl).toFixed(1)}).`,
+      message: `Fatigue (ATL ${atl.toFixed(1)}) is outpacing Fitness (CTL ${ctl.toFixed(1)}) by ${(atl - ctl).toFixed(1)} points (Form/TSB: ${(ctl - atl).toFixed(1)}).`,
     });
   }
 
@@ -46,14 +46,14 @@ export function evaluateReadiness({
   ) {
     broken.push({
       rule: 'hrv_drop',
-      message: `HRV lleva 2 días seguidos más de 6ms por debajo del promedio semanal (hoy: ${todayHRV.toFixed(0)}ms, ayer: ${yesterdayHRV.toFixed(0)}ms, promedio: ${weeklyAvgHRV.toFixed(0)}ms).`,
+      message: `HRV has been more than 6ms below your weekly average for 2 days straight (today: ${todayHRV.toFixed(0)}ms, yesterday: ${yesterdayHRV.toFixed(0)}ms, average: ${weeklyAvgHRV.toFixed(0)}ms).`,
     });
   }
 
   if (lastSleepPerformance != null && lastSleepPerformance < 50) {
     broken.push({
       rule: 'poor_sleep',
-      message: `Dormiste muy poco anoche (${lastSleepPerformance.toFixed(0)}% del objetivo de sueño).`,
+      message: `You barely slept last night (${lastSleepPerformance.toFixed(0)}% of your sleep target).`,
     });
   }
 
@@ -82,8 +82,8 @@ export function adjustBlocks(blocks) {
     const minutes = parseMinutes(b.time);
     const adjusted =
       minutes != null
-        ? `~${Math.round(minutes * 0.8)}-${Math.round(minutes * 0.9)} min (80-90% de ${b.time})`
-        : 'reduce el esfuerzo/duración a 80-90% de lo planeado';
+        ? `~${Math.round(minutes * 0.8)}-${Math.round(minutes * 0.9)} min (80-90% of ${b.time})`
+        : 'cut effort/duration to 80-90% of what was planned';
     return { ...b, adjustedNote: adjusted };
   });
 }
