@@ -24,7 +24,7 @@ async function replyToday(supabase, chatId) {
     return;
   }
   const lines = result.blocks.map(
-    (b) => `• *${b.sport}* — ${b.label} (${b.time})${b.optional ? ' _[opcional]_' : ''}`
+    (b) => `• ${b.sport} — ${b.label} (${b.time})${b.optional ? ' [opcional]' : ''}`
   );
   await sendTelegramMessage(chatId, `📅 Hoy (${result.dow}, semana ${result.week.n}):\n\n${lines.join('\n')}`);
 }
@@ -74,9 +74,9 @@ async function replyFitness(supabase, chatId) {
   await sendTelegramMessage(
     chatId,
     `📊 Al ${row.date}:\n\n` +
-      `Fitness (CTL): *${row.ctl}*\n` +
-      `Fatiga (ATL): *${row.atl}*\n` +
-      `Forma (TSB): *${row.tsb > 0 ? '+' : ''}${row.tsb}*`
+      `Fitness (CTL): ${row.ctl}\n` +
+      `Fatiga (ATL): ${row.atl}\n` +
+      `Forma (TSB): ${row.tsb > 0 ? '+' : ''}${row.tsb}`
   );
 }
 
@@ -109,13 +109,13 @@ async function replyRecovery(supabase, chatId) {
 
   const lines = [`💚 Al ${cycles[0].start_at.slice(0, 10)}:`, ''];
   if (recovery) {
-    lines.push(`Recovery: *${Math.round(recovery.recovery_score)}%*`);
-    lines.push(`FC en reposo: *${Math.round(recovery.resting_heart_rate)} bpm*`);
-    lines.push(`HRV: *${Math.round(recovery.hrv_rmssd_milli)} ms*`);
+    lines.push(`Recovery: ${Math.round(recovery.recovery_score)}%`);
+    lines.push(`FC en reposo: ${Math.round(recovery.resting_heart_rate)} bpm`);
+    lines.push(`HRV: ${Math.round(recovery.hrv_rmssd_milli)} ms`);
   }
-  lines.push(`Strain: *${Number(cycles[0].strain).toFixed(1)}*`);
+  lines.push(`Strain: ${Number(cycles[0].strain).toFixed(1)}`);
   if (sleep.length) {
-    lines.push(`Sueño: *${sleep[0].sleep_performance_percentage}%* del objetivo (${sleep[0].start_at.slice(0, 10)})`);
+    lines.push(`Sueño: ${sleep[0].sleep_performance_percentage}% del objetivo (${sleep[0].start_at.slice(0, 10)})`);
   }
   await sendTelegramMessage(chatId, lines.join('\n'));
 }
@@ -144,7 +144,7 @@ export default async function handler(req, res) {
   if (!authorizedChatId) {
     await sendTelegramMessage(
       chatId,
-      `Bot no configurado todavía.\n\nTu chat ID es: \`${chatId}\`\n\nPonlo en Vercel como la variable TELEGRAM_CHAT_ID y este bot solo te va a responder a ti.`
+      `Bot no configurado todavía.\n\nTu chat ID es: ${chatId}\n\nPonlo en Vercel como la variable TELEGRAM_CHAT_ID y este bot solo te va a responder a ti.`
     );
     res.status(200).json({ ok: true });
     return;
