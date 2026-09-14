@@ -1,5 +1,6 @@
 import { getAllPlannedBlocks } from './training-plan.js';
 import { parseMinutes } from './readiness-rules.js';
+import { todayInCartagena } from './date.js';
 
 // Maps Strava's sport_type to the plan's sport categories (Bike/Run/Swim/Strength).
 // Anything not listed here (Walk, Tennis, Golf, Workout, ...) doesn't count toward any
@@ -43,7 +44,7 @@ async function fetchActivityMinutesByDateSport(supabase, fromDate, toDate) {
 // activity on that date, and upserts a green/yellow/red verdict per block into
 // plan_completion. Skips future dates (nothing to judge yet) and un-done optional blocks
 // (never required, so silence rather than a false "red").
-export async function computePlanCompletion(supabase, { today = new Date().toISOString().slice(0, 10), year } = {}) {
+export async function computePlanCompletion(supabase, { today = todayInCartagena(), year } = {}) {
   const blocks = getAllPlannedBlocks(year);
   const pastBlocks = blocks.filter((b) => b.date <= today);
   if (!pastBlocks.length) return { evaluated: 0, upserted: 0 };

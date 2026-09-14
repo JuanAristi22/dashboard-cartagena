@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from './_lib/supabase.js';
 import { sendTelegramMessage, editMessageText, answerCallbackQuery } from './_lib/telegram.js';
 import { getWorkoutForDate, getCurrentWeek } from './_lib/training-plan.js';
 import { runFullSync } from './_lib/full-sync.js';
+import { todayInCartagena } from './_lib/date.js';
 
 const HELP_TEXT =
   'Available commands:\n' +
@@ -14,7 +15,7 @@ const HELP_TEXT =
   '/sync — sync Strava/Whoop and recalculate everything right now';
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  return todayInCartagena();
 }
 
 function addDaysStr(dateStr, days) {

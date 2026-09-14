@@ -1,4 +1,5 @@
 import { dailyLoadsFromActivities, computePmcSeries } from './pmc.js';
+import { todayInCartagena } from './date.js';
 
 // Reads every stored Strava activity (paginating past Supabase/PostgREST's 1000-row
 // default page size — a multi-year training history can exceed that).
@@ -29,7 +30,7 @@ export async function recomputePmc(supabase) {
     suffer_score: a.suffer_score,
   }));
   const dailyLoads = dailyLoadsFromActivities(forLoads);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInCartagena();
   const now = new Date().toISOString();
   const series = computePmcSeries(dailyLoads, today).map((row) => ({
     ...row,

@@ -5,6 +5,7 @@ import { checkSyncAuth } from './_lib/auth.js';
 import { evaluateReadiness, adjustBlocks } from './_lib/readiness-rules.js';
 import { getWorkoutForDate } from './_lib/training-plan.js';
 import { sendTelegramMessage } from './_lib/telegram.js';
+import { todayInCartagena } from './_lib/date.js';
 
 // Short, no-fluff lines for a clean-readings morning -- work ethic, not cheerleading.
 const GO_LINES = [
@@ -147,7 +148,7 @@ export default async function handler(req, res) {
       lastSleepPerformance,
     });
 
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = todayInCartagena();
     const workout = getWorkoutForDate(todayStr);
 
     if (!brokenRules.length) {
