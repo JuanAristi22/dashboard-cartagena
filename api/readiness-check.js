@@ -186,6 +186,13 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true, alertSent: true, brokenRules, adjustedBlocks });
   } catch (err) {
     console.error(err);
+    // Best-effort: a failure here (e.g. an expired Whoop token) would otherwise be silent --
+    // Juan gets no morning message and no idea why. A broken send just gets logged too.
+    try {
+      await sendTelegramMessage(chatId, `⚠️ Morning readiness check failed: ${err.message}`);
+    } catch (notifyErr) {
+      console.error('Failed to notify about readiness-check error:', notifyErr);
+    }
     res.status(500).json({ ok: false, error: err.message });
   }
 }

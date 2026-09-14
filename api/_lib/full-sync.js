@@ -15,7 +15,12 @@ export async function runFullSync(supabase) {
 
   try {
     const stravaToken = await getValidStravaToken(supabase);
-    result.strava = await syncStravaWindow(supabase, stravaToken, { startPage: 1, pageCount: 3 });
+    // Regular sync only needs what's new since last time -- a 3-day lookback (not just
+    // "yesterday") covers a missed cron run without ever re-fetching the athlete's full
+    // history. The one-time backfill (api/sync-strava.js, called manually page by page) is
+    // the only place that still paginates through everything.
+    const threeDaysAgo = Math.floor(Date.now() / 1000) - 3 * 86400;
+    result.strava = await syncStravaWindow(supabase, stravaToken, { startPage: 1, pageCount: 1, after: threeDaysAgo });
   } catch (err) {
     console.error('Strava sync failed:', err);
     result.errors.push({ step: 'strava', message: err.message });

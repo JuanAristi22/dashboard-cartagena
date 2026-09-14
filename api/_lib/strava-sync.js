@@ -23,13 +23,16 @@ function mapActivity(a) {
 // Fetches a bounded window of pages from Strava (not the whole history at once — Vercel's
 // Hobby plan kills functions that run too long). Returns whether it hit the end of the
 // athlete's history (a short page) so the caller knows whether to request the next window.
-async function fetchActivityPages(accessToken, startPage, pageCount) {
+// `after` (epoch seconds) asks Strava to only return activities newer than that -- used for
+// the regular incremental sync so it doesn't re-fetch hundreds of already-known activities.
+async function fetchActivityPages(accessToken, startPage, pageCount, after) {
   const perPage = 200;
   const all = [];
   let reachedEnd = false;
+  const afterParam = after ? `&after=${after}` : '';
   for (let page = startPage; page < startPage + pageCount; page++) {
     const res = await fetch(
-      `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}`,
+      `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}${afterParam}`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     if (!res.ok) {
@@ -46,11 +49,13 @@ async function fetchActivityPages(accessToken, startPage, pageCount) {
 }
 
 // Pulls one window of the athlete's activity history and upserts it into Supabase.
-// Call repeatedly with increasing `startPage` to backfill full history — each call stays
-// small enough to finish well inside Vercel's time limit. Safe to re-run (upserted by
-// source+external_id).
-export async function syncStravaWindow(supabase, accessToken, { startPage = 1, pageCount = 2 } = {}) {
-  const { activities, reachedEnd } = await fetchActivityPages(accessToken, startPage, pageCount);
+// For a one-time full backfill, call repeatedly with increasing `startPage` (no `after`) --
+// each call stays small enough to finish well inside Vercel's time limit. For the regular
+// incremental sync, pass `after` (epoch seconds) so Strava only returns recent activities
+// instead of re-fetching the athlete's whole history every run. Safe to re-run either way
+// (upserted by source+external_id).
+export async function syncStravaWindow(supabase, accessToken, { startPage = 1, pageCount = 2, after } = {}) {
+  const { activities, reachedEnd } = await fetchActivityPages(accessToken, startPage, pageCount, after);
   const rows = activities.map(mapActivity);
 
   let upserted = 0;

@@ -25,6 +25,11 @@
     --yellow:#FFC72C;
     --red:#FF5A5F;
     --green:#5FD68A;
+    --shadow:0 10px 28px rgba(0,0,0,0.38);
+    --shadow-hover:0 14px 34px rgba(0,0,0,0.5);
+    --radius-lg:18px;
+    --radius-md:14px;
+    --radius-sm:10px;
     color-scheme: dark;
   }
   html[data-theme="light"]{
@@ -37,6 +42,8 @@
     --yellow:#B8860B;
     --red:#C23B3B;
     --green:#2F8F5B;
+    --shadow:0 8px 24px rgba(20,18,10,0.08);
+    --shadow-hover:0 14px 32px rgba(20,18,10,0.12);
     color-scheme: light;
   }
   html[data-theme="light"] body{ background:var(--bg); }
@@ -64,10 +71,12 @@
     margin-bottom:18px;
   }
   .theme-toggle{
-    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
     width:38px; height:38px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-    color:var(--text); cursor:pointer;
+    color:var(--text); cursor:pointer; box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
   }
+  .theme-toggle:hover{ transform:translateY(-1px); box-shadow:var(--shadow-hover); }
   .theme-toggle svg{ width:18px; height:18px; }
   .theme-toggle .icon-sun{ display:none; }
   html[data-theme="light"] .theme-toggle .icon-moon{ display:none; }
@@ -109,14 +118,6 @@
   .rp-icon{ width:15px; height:15px; color:var(--yellow); flex-shrink:0; }
   .rp-time{ font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--text); }
   .rp-t{ font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
-  .goal-badge{
-    background:var(--yellow); color:#000; font-weight:800;
-    font-size:13px; letter-spacing:0.4px; text-transform:uppercase;
-    padding:6px 14px; border-radius:999px; margin-left:8px;
-    display:inline-flex; align-items:center; gap:6px;
-  }
-  .goal-badge span{ font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:800; }
-
   /* ================== BUTTON SYSTEM ==================
      - .seg-control / .seg-btn  → single-select segmented control, understated
      - .toggle-group / .toggle-dot-item → independent multi-select toggles as subtle dot+label (no box)
@@ -174,13 +175,15 @@
   .hero{
     background:var(--panel);
     border:1px solid var(--line);
-    border-radius:8px;
-    padding:22px 22px 16px;
-    margin-bottom:20px;
+    border-radius:var(--radius-lg);
+    padding:26px 26px 20px;
+    margin-bottom:22px;
+    box-shadow:var(--shadow);
   }
   .hero-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:4px; }
 
   .source-toggle{ display:flex; align-items:center; gap:6px; }
+  .source-note{ font-size:11px; color:var(--muted); margin:2px 0 10px; }
   .source-icon{ width:18px; height:18px; flex-shrink:0; display:flex; opacity:0.45; transition:opacity .2s ease, transform .2s ease; }
   .source-icon svg{ width:100%; height:100%; display:block; }
   .source-icon.active-tp, .source-icon.active-strava{ opacity:1; transform:scale(1.08); }
@@ -210,7 +213,7 @@
   .hero-now{ font-family:'JetBrains Mono',monospace; font-size:15px; color:var(--yellow); }
 
   .hero-metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
-  .hero-metric-box{ background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+  .hero-metric-box{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:16px 18px; }
   .hero-metric-label{ display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); margin-bottom:6px; }
   .hero-metric-label .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
   .hero-metric-value{ font-family:'JetBrains Mono',monospace; font-size:32px; font-weight:800; color:var(--text); line-height:1; }
@@ -230,7 +233,7 @@
   .sport-row .hrs{ width:56px; text-align:right; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text); flex-shrink:0; }
   .sport-tooltip{
     display:none; position:absolute; bottom:100%; left:72px; margin-bottom:6px;
-    background:#1B1B1B; border:1px solid #333; border-radius:6px;
+    background:#1B1B1B; border:1px solid #333; border-radius:var(--radius-sm);
     padding:6px 10px; font-size:11px; font-family:'JetBrains Mono',monospace;
     color:#ccc; white-space:nowrap; z-index:10; box-shadow:0 4px 12px rgba(0,0,0,0.4);
   }
@@ -238,8 +241,13 @@
 
   .section-label{ font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
 
-  .discipline-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
-  .disc-card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; }
+  .discipline-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:22px; }
+  .disc-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:18px 20px; min-width:0; box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .disc-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }
   .disc-head{ display:flex; align-items:center; gap:8px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text); margin-bottom:12px; }
   .disc-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
   .disc-row{ display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--muted); padding:4px 0; }
@@ -254,19 +262,23 @@
   .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:14px;
-    margin-bottom:20px;
+    gap:16px;
+    margin-bottom:22px;
   }
   .stats-health{ grid-template-columns:repeat(4,1fr); }
 
   .card{
     background:var(--panel);
     border:1px solid var(--line);
-    border-radius:8px;
-    padding:16px 18px;
+    border-radius:var(--radius-md);
+    padding:18px 20px;
     min-width:0;
     overflow:hidden;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
   }
+  .card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+  .card-wide{ grid-column:span 2; }
   .card .k{ color:var(--text); font-weight:700; font-size:12px; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; display:flex; align-items:center; gap:7px; }
   .k-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
   .card .v{
@@ -296,9 +308,10 @@
   .panel{
     background:var(--panel);
     border:1px solid var(--line);
-    border-radius:8px;
-    padding:20px;
-    margin-bottom:18px;
+    border-radius:var(--radius-lg);
+    padding:22px;
+    margin-bottom:20px;
+    box-shadow:var(--shadow);
   }
   .panel h2{
     font-family:'Barlow Condensed',sans-serif;
@@ -319,8 +332,8 @@
     background:#1A1400;
     border:1px solid #4A3D00;
     border-left:3px solid var(--yellow);
-    border-radius:4px;
-    padding:14px 16px;
+    border-radius:var(--radius-sm);
+    padding:16px 18px;
     font-size:13.5px;
     color:#EFE3AE;
     margin-bottom:18px;
@@ -343,10 +356,11 @@
     display:flex;
     background:var(--panel-2);
     border:1px solid var(--line);
-    border-radius:11px;
-    padding:3px;
+    border-radius:14px;
+    padding:4px;
     gap:3px;
     margin-bottom:16px;
+    box-shadow:var(--shadow);
   }
   .view-tab{
     flex:1;
@@ -356,7 +370,7 @@
     gap:6px;
     background:transparent;
     border:none;
-    border-radius:8px;
+    border-radius:var(--radius-sm);
     padding:9px 0;
     font-family:'Barlow Condensed',sans-serif;
     font-weight:700;
@@ -372,7 +386,7 @@
   .view-tab:hover:not(.active){ color:var(--text); }
 
   /* ================== TRAINING PLAN ================== */
-  details.week-card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; overflow:hidden; }
+  details.week-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md); margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow); }
   .week-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; flex-direction:column; gap:7px; }
   .week-summary::-webkit-details-marker{ display:none; }
   .week-row1{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -387,7 +401,7 @@
   .week-row2 b{ color:var(--text); font-weight:600; }
   .week-body{ padding:0 18px 16px; display:flex; flex-direction:column; gap:6px; }
 
-  details.day-card{ background:var(--panel-2); border:1px solid var(--line); border-radius:6px; }
+  details.day-card{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm); }
   details.day-card.race-day{ border-color:var(--yellow); background:#1A1400; }
   .day-summary{ list-style:none; cursor:pointer; padding:10px 12px; display:flex; align-items:center; gap:10px; }
   .day-summary::-webkit-details-marker{ display:none; }
@@ -396,7 +410,7 @@
   .day-toggle:before{ content:"+"; }
   .day-dow{ width:32px; flex-shrink:0; font-size:11px; font-weight:700; color:var(--text); text-transform:uppercase; }
   .day-chips{ flex:1; display:flex; gap:6px; flex-wrap:wrap; min-width:0; }
-  .day-chip{ display:inline-flex; align-items:center; gap:5px; background:#232323; border-radius:5px; padding:4px 8px; font-size:11px; color:var(--text); font-weight:600; white-space:nowrap; }
+  .day-chip{ display:inline-flex; align-items:center; gap:5px; background:var(--panel-2); border-radius:8px; padding:4px 8px; font-size:11px; color:var(--text); font-weight:600; white-space:nowrap; }
   .day-chip svg{ width:12px; height:12px; flex-shrink:0; }
   .day-chip .chip-time{ color:var(--muted); font-weight:400; font-family:'JetBrains Mono',monospace; font-size:10px; }
   .day-chip.is-optional{ background:transparent; border:1px dashed var(--line); color:var(--muted); }
@@ -409,7 +423,7 @@
   .block-card.status-red{ border-left:3px solid var(--red); }
 
   .day-blocks{ padding:0 12px 12px 12px; display:flex; flex-direction:column; gap:8px; }
-  .block-card{ background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px; margin-left:0; }
+  .block-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; margin-left:0; }
   .block-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
   .block-icon{ width:18px; height:18px; flex-shrink:0; color:var(--yellow); }
   .block-icon.icon-strength{ color:#9B8CFF; }
@@ -421,7 +435,7 @@
   .block-time{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); flex-shrink:0; }
   .send-btn{
     display:inline-flex; align-items:center; gap:5px;
-    background:none; border:1px solid var(--line); border-radius:5px;
+    background:none; border:1px solid var(--line); border-radius:8px;
     padding:4px 9px; font-family:'Inter',sans-serif; font-size:10.5px; font-weight:600;
     color:var(--muted); cursor:pointer; flex-shrink:0; text-transform:uppercase; letter-spacing:0.2px;
   }
@@ -438,21 +452,30 @@
   .block-notes b{ color:var(--yellow); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.3px; }
   .confirm-flag{ color:var(--yellow); font-weight:600; }
 
+  .actual-card{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:var(--radius-sm); padding:12px 14px; }
+  .actual-label{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:var(--green); margin-bottom:8px; }
+  .actual-row{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text); padding:4px 0; }
+  .actual-row .actual-icon{ width:15px; height:15px; color:var(--green); flex-shrink:0; }
+  .actual-row .actual-sport{ font-weight:700; text-transform:uppercase; font-size:11px; color:var(--text); flex-shrink:0; }
+  .actual-row .actual-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+  .actual-row .actual-stats{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text); flex-shrink:0; }
+  .day-chip.actual-chip{ background:rgba(95,214,138,0.1); }
+
   details.zones-ref{
     background:linear-gradient(180deg, rgba(255,199,44,0.07), rgba(255,199,44,0.02));
     border:1px solid var(--yellow);
     border-left:4px solid var(--yellow);
-    border-radius:8px;
-    margin-bottom:16px;
+    border-radius:var(--radius-md);
+    margin-bottom:18px;
     overflow:hidden;
-    box-shadow:0 0 0 1px rgba(255,199,44,0.08);
+    box-shadow:0 0 0 1px rgba(255,199,44,0.08), var(--shadow);
   }
   .zones-ref-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; align-items:center; gap:10px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px; text-transform:uppercase; color:var(--yellow); }
   .zones-ref-summary svg.day-toggle-icon{ color:var(--yellow); }
   .refresh-group{ margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
   .refresh-btn{
     display:inline-flex; align-items:center; gap:6px;
-    background:none; border:1px solid var(--line); border-radius:6px;
+    background:none; border:1px solid var(--line); border-radius:8px;
     padding:5px 12px; font-family:'Inter',sans-serif; font-weight:600; font-size:11px;
     text-transform:uppercase; letter-spacing:0.3px; color:var(--muted); cursor:pointer;
   }
@@ -487,7 +510,6 @@
     .hero-metric-label{ font-size:10px; gap:4px; }
     .race-plan{ gap:6px 10px; }
     .rp-time{ font-size:11.5px; }
-    .goal-badge{ width:100%; margin-left:0; margin-top:6px; justify-content:center; }
     .block-title{ min-width:100%; }
     .day-chips{ gap:5px; }
     .day-chip{ font-size:10px; padding:3px 6px; }
@@ -530,7 +552,6 @@
           <svg class="rp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.2" cy="4.5" r="1.7" fill="currentColor" stroke="none"/><path d="M7 21l2.5-4.5-1.8-3.2 1.3-3.8 3.7 1.6 1.3 3.4h3.5"/><path d="M11.5 10.5l-3.8 1.3-2.2 3.7"/></svg>
           <span class="rp-time">1:30:00</span>
         </div>
-        <div class="goal-badge">GOAL <span>4:28:00</span></div>
       </div>
     </div>
     <div class="header-actions">
@@ -561,18 +582,19 @@
   <div class="hero">
     <div class="hero-head">
       <h2>Overall Progress</h2>
-      <div class="source-toggle" hidden title="Oculto hasta tener TrainingPeaks Premium con datos propios">
-        <span class="source-icon" id="label-tp">
+      <div class="source-toggle">
+        <span class="source-icon" id="label-tp" title="TrainingPeaks (manual snapshot)">
           <svg viewBox="0 0 24 24"><rect x="0.75" y="0.75" width="22.5" height="22.5" rx="6" fill="#0A1628" stroke="rgba(255,255,255,0.28)" stroke-width="1"/><g fill="#3B82F6"><polygon points="9,17.5 10.8,17.5 13.3,6.5 11.5,6.5"/><polygon points="12.2,17.5 14,17.5 16,10.8 14.2,10.8"/><polygon points="6,14.5 7.8,14.5 9,11 7.2,11"/></g></svg>
         </span>
         <button class="ios-toggle" id="source-toggle-btn" aria-label="Toggle data source">
           <span class="ios-toggle-thumb"></span>
         </button>
-        <span class="source-icon" id="label-strava">
+        <span class="source-icon" id="label-strava" title="Strava (live, auto-synced)">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#FC4C02"/><g transform="translate(4.5,4) scale(0.94)" fill="#fff"><path d="M6.731 0 2 9.125h2.788L6.73 5.497l1.93 3.628h2.766zm4.694 9.125-1.372 2.756L8.66 9.125H6.547L10.053 16l3.484-6.875z"/></g></svg>
         </span>
       </div>
     </div>
+    <div class="source-note" id="source-note" hidden></div>
     <div class="hero-metrics" id="hero-metrics"></div>
     <div class="toggle-group" id="tabs"></div>
     <div class="chart-box-lg"><canvas id="heroChart"></canvas></div>
@@ -702,10 +724,11 @@ async function fetchLiveData(){
   const pmcCutoff = isoDaysAgo(370);
   const actCutoff = isoDaysAgo(210);
 
-  const [pmcRes, actRes, cyclesRes, sleepRes, planRes] = await Promise.all([
-    sb.from('pmc_daily').select('date,ctl,atl,tsb').gte('date', pmcCutoff).order('date', { ascending: true }),
+  const [pmcRes, pmcTpRes, actRes, cyclesRes, sleepRes, planRes] = await Promise.all([
+    sb.from('pmc_daily').select('date,daily_load,ctl,atl,tsb').gte('date', pmcCutoff).order('date', { ascending: true }),
+    sb.from('pmc_tp_daily').select('date,daily_load,ctl,atl,tsb,updated_at').order('date', { ascending: true }),
     sb.from('activities')
-      .select('start_date,sport_type,moving_time_s,distance_m,start_date_local:raw->>start_date_local')
+      .select('start_date,sport_type,name,moving_time_s,distance_m,kilojoules,average_heartrate,start_date_local:raw->>start_date_local')
       .eq('source', 'strava').gte('start_date', actCutoff).order('start_date', { ascending: true }),
     sb.from('whoop_cycles').select('external_id,start_at,strain').gte('start_at', actCutoff).order('start_at', { ascending: true }),
     sb.from('whoop_sleep')
@@ -721,6 +744,7 @@ async function fetchLiveData(){
 
   return {
     pmc: pmcRes.data || [],
+    pmcTp: pmcTpRes.data || [],
     activities: actRes.data || [],
     cycles: cyclesRes.data || [],
     recovery: recoveryRes.data || [],
@@ -730,8 +754,8 @@ async function fetchLiveData(){
 }
 
 function toPmcSeries(rows){
-  if (!rows.length) return [[TODAY.toISOString().slice(0,10), 0, 0, 0]];
-  return rows.map(r => [r.date, Number(r.ctl), Number(r.atl), Number(r.tsb)]);
+  if (!rows.length) return [[TODAY.toISOString().slice(0,10), 0, 0, 0, 0]];
+  return rows.map(r => [r.date, Number(r.ctl), Number(r.atl), Number(r.tsb), Number(r.daily_load) || 0]);
 }
 
 function toHoursData(activities){
@@ -740,7 +764,27 @@ function toHoursData(activities){
     a.sport_type,
     (a.moving_time_s || 0) / 3600,
     (a.distance_m || 0) / 1000,
+    Number(a.kilojoules) || 0,
+    a.average_heartrate != null ? Number(a.average_heartrate) : null,
   ]);
+}
+
+// date -> [{sport, name, hours, km}] -- every real Strava activity logged that calendar day,
+// regardless of whether it matches anything in the plan. Used by the Plan tab to show what
+// actually happened on days where the planned session didn't go as prescribed.
+function toActivitiesByDate(activities){
+  const map = new Map();
+  for (const a of activities){
+    const date = (a.start_date_local || a.start_date).slice(0,10);
+    if(!map.has(date)) map.set(date, []);
+    map.get(date).push({
+      sport: a.sport_type,
+      name: a.name || '',
+      hours: (a.moving_time_s || 0) / 3600,
+      km: (a.distance_m || 0) / 1000,
+    });
+  }
+  return map;
 }
 
 function sleepHoursFromStageSummary(json){
@@ -793,8 +837,13 @@ function avgFieldInRange(rows, start, end, field){
 const live = await fetchLiveData();
 
 const stravaPmc = toPmcSeries(live.pmc);
-const pmc = stravaPmc; // no separate TrainingPeaks source yet -- both point at the same real, Strava-derived series
+// TrainingPeaks is only reachable through an MCP tool inside a Claude conversation, not from
+// the Vercel cron -- this series is a manual snapshot, recomputed by hand from TP history and
+// re-inserted into pmc_tp_daily when asked, not refreshed automatically like stravaPmc.
+const tpPmc = toPmcSeries(live.pmcTp);
+const tpPmcUpdatedAt = live.pmcTp.length ? live.pmcTp[live.pmcTp.length - 1].updated_at : null;
 const hoursData = toHoursData(live.activities);
+const activitiesByDate = toActivitiesByDate(live.activities);
 const whoopDaily = toWhoopDaily(live.cycles, live.recovery);
 const sleepDaily = toSleepDaily(live.sleep);
 
@@ -803,22 +852,37 @@ const PLAN_STATUS = Object.fromEntries(
   live.planCompletion.map(r => [`${r.week_n}-${r.dow}-${r.block_index}`, r.status])
 );
 
-// HR zone distribution -- not yet computed from real Strava HR streams (needs a separate
-// per-activity streams pull, not built yet); kept static until that's built.
-// zones: Z1 0-118, Z2 119-147, Z3 148-162, Z4 163-177, Z5 178+ (Strava-defined, MaxHR-from-age)
-const ZONE_DIST = [
-  { z:'Z1', pct:13.1, range:'0-118 bpm', color:'#4A90D9' },
-  { z:'Z2', pct:38.9, range:'119-147 bpm', color:'#5FB77E' },
-  { z:'Z3', pct:30.9, range:'148-162 bpm', color:'#FFC72C' },
-  { z:'Z4', pct:17.1, range:'163-177 bpm', color:'#FF7A45' },
-  { z:'Z5', pct:0.0,  range:'178+ bpm',   color:'#D9666B' }
+// HR zone boundaries (Strava-defined, MaxHR-from-age). Each activity is bucketed into ONE
+// zone using its whole-session average heart rate -- an approximation, not a true
+// intra-workout time-in-zone breakdown (that needs a per-activity HR stream pull from Strava,
+// which we're intentionally not doing to keep the sync fast and light on API calls).
+const ZONE_DEFS = [
+  { z:'Z1', min:0,   max:118,      range:'0-118 bpm',  color:'#4A90D9' },
+  { z:'Z2', min:119, max:147,      range:'119-147 bpm', color:'#5FB77E' },
+  { z:'Z3', min:148, max:162,      range:'148-162 bpm', color:'#FFC72C' },
+  { z:'Z4', min:163, max:177,      range:'163-177 bpm', color:'#FF7A45' },
+  { z:'Z5', min:178, max:Infinity, range:'178+ bpm',    color:'#D9666B' },
 ];
+// Percent of trained hours (activities with HR data) spent in each zone, for the given
+// period -- follows the same period tabs as everything else, unlike the old fixed window.
+function zonesInRange(start, end){
+  const rows = hoursData.filter(h=>{ const d=toDate(h[0]); return d>=start && d<=end && h[5]!=null; });
+  const totalHours = rows.reduce((a,h)=>a+h[2],0);
+  return ZONE_DEFS.map(zd => ({
+    z: zd.z,
+    pct: totalHours>0 ? (rows.filter(h=>h[5]>=zd.min && h[5]<=zd.max).reduce((a,h)=>a+h[2],0) / totalHours * 100) : 0,
+    range: zd.range,
+    color: zd.color,
+  }));
+}
 
 const GLOSS = {
   ctl: "Fitness (CTL): your accumulated training load over the last 6 weeks, calculated from Strava's Relative Effort (centralizes Coros, Wahoo and Technogym). Rises and falls slowly — it's the base you've built.",
   atl: "Fatigue (ATL): your load from the last week, based on Strava's Relative Effort. Rises and falls fast — it's how tired you are right now, without the accumulated base filtered in.",
   tsb: "Form (TSB): Fitness minus Fatigue. Positive = rested and with margin to perform. Negative = you're absorbing load; normal in build weeks, risky if it stays negative for weeks right before a race.",
-  whoop: "Whoop Recovery: how recovered you wake up based on overnight HRV, resting heart rate and the previous night's sleep. Above 67 is a green light to train hard; below 34 calls for a lighter day."
+  whoop: "Whoop Recovery: how recovered you wake up based on overnight HRV, resting heart rate and the previous night's sleep. Above 67 is a green light to train hard; below 34 calls for a lighter day.",
+  tss: "Total training load (Training Stress Score) added up over the selected period, from Strava's Relative Effort per session. Switch the period tab above to compare this week against last week, last month, or the last 3 months.",
+  calories: "Estimated energy expenditure, summed from each activity's work in kilojoules (Strava's per-session estimate). For endurance sports, kilojoules and kilocalories burned track each other closely, so this is a solid estimate rather than an exact lab measurement."
 };
 
 // ================== TABS (chart line toggles only) ==================
@@ -875,7 +939,7 @@ function renderHeroRangeTabs(){
 
 // ================== DATA SOURCE TOGGLE (TP vs Strava) ==================
 let currentSource = 'strava';
-function getSourceData(){ return currentSource === 'tp' ? pmc : stravaPmc; }
+function getSourceData(){ return currentSource === 'tp' ? tpPmc : stravaPmc; }
 
 function updateHeroChartRange(){
   const range = HERO_RANGES.find(r=>r.id===heroRange);
@@ -915,10 +979,18 @@ function applySourceUI(){
   const btn = document.getElementById('source-toggle-btn');
   const labelTp = document.getElementById('label-tp');
   const labelStrava = document.getElementById('label-strava');
+  const note = document.getElementById('source-note');
   btn.classList.toggle('state-tp', currentSource==='tp');
   btn.classList.toggle('state-strava', currentSource==='strava');
   labelTp.classList.toggle('active-tp', currentSource==='tp');
   labelStrava.classList.toggle('active-strava', currentSource==='strava');
+  if (currentSource === 'tp') {
+    const asOf = tpPmcUpdatedAt ? new Date(tpPmcUpdatedAt).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : null;
+    note.textContent = `TrainingPeaks: manual snapshot${asOf ? ` as of ${asOf}` : ''}, not auto-synced (TP only reachable from a Claude conversation).`;
+    note.hidden = false;
+  } else {
+    note.hidden = true;
+  }
 }
 
 document.getElementById('source-toggle-btn').addEventListener('click', ()=>{
@@ -1009,6 +1081,7 @@ function hoursInRange(start,end){
   const rows = hoursData.filter(h=>{ const d=toDate(h[0]); return d>=start && d<=end; });
   const total = rows.reduce((a,h)=>a+h[2],0);
   const totalKm = rows.reduce((a,h)=>a+(h[3]||0),0);
+  const totalKcal = rows.reduce((a,h)=>a+(h[4]||0),0);
   const bySport = {};
   rows.forEach(h=>{
     const cat = SPORT_CATEGORY[h[1]] || 'OTHERS';
@@ -1016,14 +1089,19 @@ function hoursInRange(start,end){
     bySport[cat].hours += h[2];
     bySport[cat].km += (h[3]||0);
   });
-  return { total, totalKm, bySport };
+  return { total, totalKm, totalKcal, bySport };
 }
 function ctlAt(dateLimit){
   const rows = stravaPmc.filter(p=> toDate(p[0]) <= dateLimit);
   return rows.length ? rows[rows.length-1][1] : null;
 }
+// Sums daily_load (Strava suffer_score, used as our TSS-equivalent) over [start,end].
+function tssInRange(start,end){
+  const rows = stravaPmc.filter(p=>{ const d=toDate(p[0]); return d>=start && d<=end; });
+  return rows.reduce((a,p)=>a+(p[4]||0),0);
+}
 
-function deltaBadge(curr, prev, isPct=true){
+function deltaBadge(curr, prev, isPct=true, compareLabel='vs previous period'){
   if(prev===null || prev===undefined || curr===null || curr===undefined) return `<span class="d delta-text">No prior data to compare</span>`;
   if(prev===0 && curr===0) return `<span class="d delta-text">No change</span>`;
   const diff = curr - prev;
@@ -1031,7 +1109,7 @@ function deltaBadge(curr, prev, isPct=true){
   const cls = diff > 0 ? 'up' : (diff < 0 ? 'down' : '');
   const arrow = diff > 0 ? '↗' : (diff < 0 ? '↘' : '→');
   const valueTxt = isPct && pct!==null ? `${pct>=0?'+':''}${pct.toFixed(0)}%` : `${diff>=0?'+':''}${diff.toFixed(1)}`;
-  return `<span class="d"><span class="delta-badge ${cls}">${arrow} ${valueTxt}</span> <span class="delta-text">vs previous period</span></span>`;
+  return `<span class="d"><span class="delta-badge ${cls}">${arrow} ${valueTxt}</span> <span class="delta-text">${compareLabel}</span></span>`;
 }
 
 function renderMetrics(){
@@ -1050,8 +1128,15 @@ function renderMetrics(){
   }
   const maxSport = sportEntries.length ? sportEntries[0][1].hours : 1;
 
-  const ctlCur = ctlAt(p.end);
-  const ctlStart = ctlAt(p.start);
+  // Fitness (CTL) is a snapshot, not a period total -- always "as of today", regardless of
+  // which period tab is active. The comparison is a fixed 7-day trend, not tied to the tab.
+  const ctlToday = ctlAt(TODAY);
+  const ctlWeekAgo = ctlAt(addDays(TODAY, -7));
+
+  const tssCur = tssInRange(p.start, p.end);
+  const tssPrev = hasPrevData ? tssInRange(p.prevStart, p.prevEnd) : null;
+
+  const hrSessionsInRange = hoursData.filter(h=>{ const d=toDate(h[0]); return d>=p.start && d<=p.end && h[5]!=null; }).length;
 
   // Health metrics follow the same period tab as everything else above.
   const recoveryCur = avgFieldInRange(whoopDaily, p.start, p.end, 'recovery_score');
@@ -1067,8 +1152,8 @@ function renderMetrics(){
 
   const cards = [
     {
-      k:`AVG ${adj} FITNESS`, v: ctlCur!==null?ctlCur:'—', dot:'#FFC72C',
-      d: (ctlCur!==null && ctlStart!==null) ? deltaBadge(ctlCur, ctlStart, false) : `<span class="d">Strava CTL</span>`,
+      k:'CURRENT FITNESS', v: ctlToday!==null?ctlToday:'—', dot:'#FFC72C',
+      d: (ctlToday!==null && ctlWeekAgo!==null) ? deltaBadge(ctlToday, ctlWeekAgo, false, 'vs 7 days ago') : `<span class="d">Strava CTL</span>`,
       g:GLOSS.ctl
     },
     {
@@ -1077,10 +1162,22 @@ function renderMetrics(){
       g:null
     },
     {
+      k:`${adj} TSS`, v: Math.round(tssCur), dot:'#B983FF',
+      d: deltaBadge(tssCur, tssPrev),
+      g:GLOSS.tss
+    },
+    {
+      k:`${adj} CALORIES`, v: cur.totalKcal>0 ? Math.round(cur.totalKcal).toLocaleString()+' kcal' : '—', dot:'#FF9F45',
+      d: deltaBadge(cur.totalKcal, hasPrevData?prev.totalKcal:null),
+      g:GLOSS.calories
+    },
+    {
       k:`${adj} SPORTS`, v:'', d:'', sport:sportEntries, maxSport, total:cur.total, g:null
     },
     {
-      k:'TRAINING ZONES', v:'', d:'', zones:ZONE_DIST, note:'Last 30 days · bike + run, fixed window', g:null
+      k:`${adj} TRAINING ZONES`, v:'', d:'', zones:zonesInRange(p.start, p.end),
+      note: hrSessionsInRange>0 ? `Based on avg HR per session · ${hrSessionsInRange} session${hrSessionsInRange===1?'':'s'} with HR data` : 'No heart rate data for this period',
+      g:null
     }
   ];
 
@@ -1181,7 +1278,8 @@ const heroChart = new Chart(document.getElementById('heroChart'), {
         backgroundColor:'#1B1B1B',
         borderColor:'#333',
         borderWidth:1,
-        padding:10,
+        cornerRadius:10,
+        padding:12,
         titleColor:'#fff',
         titleFont:{ size:12, weight:'700' },
         bodyColor:'#ccc',
@@ -1326,6 +1424,44 @@ function blockStatus(weekN, dow, blockIndex){
   return PLAN_STATUS[`${weekN}-${dow}-${blockIndex}`] || null;
 }
 
+// Mirrors api/_lib/training-plan.js's weekStartDate()/getAllPlannedBlocks() date math, so the
+// Plan tab can look up real Strava activities by the same calendar date the cron uses.
+const PLAN_MONTHS = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+const PLAN_DOW_ORDER = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+const PLAN_YEAR = 2026;
+function dateForDow(week, dow){
+  const m = week.dates.match(/^([A-Za-z]+)\s+(\d+)/);
+  if(!m) return null;
+  const month = PLAN_MONTHS[m[1]];
+  if(month == null) return null;
+  const d = new Date(Date.UTC(PLAN_YEAR, month, Number(m[2])));
+  d.setUTCDate(d.getUTCDate() + PLAN_DOW_ORDER.indexOf(dow));
+  return d.toISOString().slice(0,10);
+}
+
+// Strava's sport_type -> the plan's icon keys (see SPORT_ICON_PATH). Anything not listed
+// (Walk, Workout, ...) just renders without an icon.
+const STRAVA_TO_PLAN_ICON = { Ride:'Bike', VirtualRide:'Bike', EBikeRide:'Bike', Run:'Run', TrailRun:'Run', Swim:'Swim', WeightTraining:'Strength' };
+
+// Shown when at least one planned block that day came back red/yellow -- i.e. the day didn't
+// go as prescribed -- so the athlete can see what they actually did instead, not just a red dot.
+function renderActualCard(activities){
+  const rows = activities.map(a => {
+    const iconKey = STRAVA_TO_PLAN_ICON[a.sport] || null;
+    const kmTxt = a.km > 0.05 ? ` · ${a.km.toFixed(1)}km` : '';
+    return `<div class="actual-row">
+      ${iconKey ? sportIcon(iconKey, 'actual-icon') : ''}
+      <span class="actual-sport">${a.sport}</span>
+      <span class="actual-name">${a.name}</span>
+      <span class="actual-stats">${a.hours.toFixed(1)}h${kmTxt}</span>
+    </div>`;
+  }).join('');
+  return `<div class="actual-card">
+    <div class="actual-label">What you actually logged that day</div>
+    ${rows}
+  </div>`;
+}
+
 function renderWeeks(){
   document.getElementById('weeks-container').innerHTML = WEEKS.map(w=>{
     const dayOrder = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
@@ -1351,6 +1487,11 @@ function renderWeeks(){
           const blocks = w.days[dow];
           if(!blocks) return '';
           const isRace = blocks.some(b=>b.raceDay);
+          const dateStr = dateForDow(w, dow);
+          const dayActivities = dateStr ? (activitiesByDate.get(dateStr) || []) : [];
+          // TrainingPeaks-style calendar: always show what was actually logged that day
+          // alongside the plan, whether or not it matches what was scheduled.
+          const showActual = dayActivities.length > 0;
           return `
           <details class="day-card ${isRace?'race-day':''}">
             <summary class="day-summary">
@@ -1360,6 +1501,12 @@ function renderWeeks(){
                 ${blocks.map((b,i)=>{ const st = blockStatus(w.n, dow, i); return `
                   <span class="day-chip ${b.optional?'is-optional':''}">${st?`<span class="status-dot status-${st}"></span>`:''}${sportIcon(b.sport)}${b.sport}${b.optional?' (opt)':''} <span class="chip-time">${b.time}</span></span>
                 `;}).join('')}
+                ${showActual ? dayActivities.map(a=>{
+                  const planKey = STRAVA_TO_PLAN_ICON[a.sport];
+                  const label = planKey || a.sport;
+                  const timeTxt = a.hours>0 ? `${Math.round(a.hours*60)} min` : '';
+                  return `<span class="day-chip actual-chip"><span class="status-dot status-green"></span>${planKey?sportIcon(planKey):''}${label} <span class="chip-time">${timeTxt}</span></span>`;
+                }).join('') : ''}
               </div>
             </summary>
             <div class="day-blocks">
@@ -1374,6 +1521,7 @@ function renderWeeks(){
                   ${renderBlockDetail(b)}
                   ${b.notes?`<div class="block-notes"><b>Observations</b><br>${b.notes}</div>`:''}
                 </div>`;}).join('')}
+              ${showActual ? renderActualCard(dayActivities) : ''}
             </div>
           </details>`;
         }).join('')}
