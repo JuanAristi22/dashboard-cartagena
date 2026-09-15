@@ -25,6 +25,7 @@
     --yellow:#FFC72C;
     --red:#FF5A5F;
     --green:#5FD68A;
+    --magenta:#E85DC0;
     --shadow:0 10px 28px rgba(0,0,0,0.38);
     --shadow-hover:0 14px 34px rgba(0,0,0,0.5);
     --radius-lg:18px;
@@ -42,6 +43,7 @@
     --yellow:#B8860B;
     --red:#C23B3B;
     --green:#2F8F5B;
+    --magenta:#B8298F;
     --shadow:0 8px 24px rgba(20,18,10,0.08);
     --shadow-hover:0 14px 32px rgba(20,18,10,0.12);
     color-scheme: light;
@@ -418,6 +420,7 @@
   .status-dot.status-green{ background:var(--green); }
   .status-dot.status-yellow{ background:var(--yellow); }
   .status-dot.status-red{ background:var(--red); }
+  .status-dot.status-extra{ background:var(--magenta); }
   .block-card.status-green{ border-left:3px solid var(--green); }
   .block-card.status-yellow{ border-left:3px solid var(--yellow); }
   .block-card.status-red{ border-left:3px solid var(--red); }
@@ -452,14 +455,14 @@
   .block-notes b{ color:var(--yellow); font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.3px; }
   .confirm-flag{ color:var(--yellow); font-weight:600; }
 
-  .actual-card{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--green); border-radius:var(--radius-sm); padding:12px 14px; }
-  .actual-label{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:var(--green); margin-bottom:8px; }
+  .actual-card{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--magenta); border-radius:var(--radius-sm); padding:12px 14px; }
+  .actual-label{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:var(--magenta); margin-bottom:8px; }
   .actual-row{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text); padding:4px 0; }
-  .actual-row .actual-icon{ width:15px; height:15px; color:var(--green); flex-shrink:0; }
+  .actual-row .actual-icon{ width:15px; height:15px; color:var(--magenta); flex-shrink:0; }
   .actual-row .actual-sport{ font-weight:700; text-transform:uppercase; font-size:11px; color:var(--text); flex-shrink:0; }
   .actual-row .actual-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
   .actual-row .actual-stats{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text); flex-shrink:0; }
-  .day-chip.actual-chip{ background:rgba(95,214,138,0.1); }
+  .day-chip.actual-chip{ background:rgba(232,93,192,0.12); }
 
   details.zones-ref{
     background:linear-gradient(180deg, rgba(255,199,44,0.07), rgba(255,199,44,0.02));
@@ -1522,7 +1525,7 @@ function renderWeeks(){
                   const planKey = STRAVA_TO_PLAN_ICON[a.sport];
                   const label = planKey || a.sport;
                   const timeTxt = a.hours>0 ? `${Math.round(a.hours*60)} min` : '';
-                  return `<span class="day-chip actual-chip"><span class="status-dot status-green"></span>${planKey?sportIcon(planKey):''}${label} <span class="chip-time">${timeTxt}</span></span>`;
+                  return `<span class="day-chip actual-chip"><span class="status-dot status-extra"></span>${planKey?sportIcon(planKey):''}${label} <span class="chip-time">${timeTxt}</span></span>`;
                 }).join('') : ''}
               </div>
             </summary>
