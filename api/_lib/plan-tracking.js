@@ -40,13 +40,21 @@ async function fetchActivityMinutesByDateSport(supabase, fromDate, toDate) {
   return byDateSport;
 }
 
-// Compares every past, already-happened block in the training plan against real Strava
-// activity on that date, and upserts a green/yellow/red verdict per block into
-// plan_completion. Skips future dates (nothing to judge yet) and un-done optional blocks
-// (never required, so silence rather than a false "red").
-export async function computePlanCompletion(supabase, { today = todayInCartagena(), year } = {}) {
+// Compares each recently-happened block in the training plan against real Strava activity on
+// that date, and upserts a green/yellow/red verdict per block into plan_completion. Only
+// looks at the last `lookbackDays` days (default 3, matching the Strava sync's own lookback)
+// instead of the whole plan-to-date -- each block's verdict only depends on that one day, so
+// once a day is outside the lookback window it's assumed already correctly scored and isn't
+// re-touched every sync. Skips future dates (nothing to judge yet) and un-done optional
+// blocks (never required, so silence rather than a false "red"). Pass a larger `lookbackDays`
+// for a one-off manual catch-up (e.g. after the cron was down for a while).
+export async function computePlanCompletion(supabase, { today = todayInCartagena(), year, lookbackDays = 3 } = {}) {
+  const windowStart = new Date(today + 'T00:00:00Z');
+  windowStart.setUTCDate(windowStart.getUTCDate() - lookbackDays);
+  const windowStartStr = windowStart.toISOString().slice(0, 10);
+
   const blocks = getAllPlannedBlocks(year);
-  const pastBlocks = blocks.filter((b) => b.date <= today);
+  const pastBlocks = blocks.filter((b) => b.date <= today && b.date >= windowStartStr);
   if (!pastBlocks.length) return { evaluated: 0, upserted: 0 };
 
   const fromDate = pastBlocks[0].date;

@@ -18,20 +18,31 @@ export function dailyLoadsFromActivities(activities) {
   return byDate;
 }
 
-// Builds a continuous daily CTL/ATL/TSB series from the first activity date through
-// `throughDate` (inclusive), filling rest days with 0 load. Seeded at CTL=ATL=0 on the day
-// before the series starts — with 42-day/7-day time constants, this seed's influence is
-// negligible by the time the series has run a few months, which is why sync-strava pulls
-// full history rather than just recent activities.
-export function computePmcSeries(dailyLoads, throughDate) {
-  const dates = [...dailyLoads.keys()].sort();
-  if (!dates.length) return [];
-
-  const start = new Date(dates[0] + 'T00:00:00Z');
+// Builds a continuous daily CTL/ATL/TSB series, filling rest days with 0 load.
+//
+// Without `seed`: starts from the first date in dailyLoads, seeded at CTL=ATL=0 the day
+// before -- used only for the one-time bootstrap over full history (no prior pmc_daily rows
+// yet). With `seed` ({date, ctl, atl}): continues the EWMA recursion from that exact
+// checkpoint forward through `throughDate` -- this is the normal path, and only needs
+// dailyLoads for the days after the seed, not the athlete's whole history.
+export function computePmcSeries(dailyLoads, throughDate, seed) {
   const end = new Date(throughDate + 'T00:00:00Z');
+  let start, ctl, atl;
 
-  let ctl = 0;
-  let atl = 0;
+  if (seed) {
+    start = new Date(seed.date + 'T00:00:00Z');
+    start.setUTCDate(start.getUTCDate() + 1);
+    ctl = seed.ctl;
+    atl = seed.atl;
+  } else {
+    const dates = [...dailyLoads.keys()].sort();
+    if (!dates.length) return [];
+    start = new Date(dates[0] + 'T00:00:00Z');
+    ctl = 0;
+    atl = 0;
+  }
+  if (start > end) return [];
+
   const series = [];
 
   for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
