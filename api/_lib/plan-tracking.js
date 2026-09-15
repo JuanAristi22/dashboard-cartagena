@@ -19,20 +19,33 @@ const GREEN_THRESHOLD = 0.7; // actual/planned ratio at or above this = green, b
 
 // Reads real Strava activities in the plan's date range and totals minutes per
 // (date, mapped sport) -- e.g. { '2026-09-16': { Bike: 62, Run: 15 } }.
+//
+// Filters and groups by `raw->>start_date_local` (the athlete's local wall-clock time,
+// Strava's convention despite the trailing "Z"), not the top-level `start_date` (true UTC).
+// Filtering on `start_date` against bare "YYYY-MM-DD" bounds silently excluded every activity
+// on `toDate` itself -- Postgres reads `start_date <= '2026-09-15'` as "<= midnight UTC", so
+// anything later that day (i.e. nearly everything) was dropped. That's a big deal here
+// specifically because `toDate` is always today -- the one day this function most needs to
+// get right.
 async function fetchActivityMinutesByDateSport(supabase, fromDate, toDate) {
+  const exclusiveEnd = new Date(toDate + 'T00:00:00Z');
+  exclusiveEnd.setUTCDate(exclusiveEnd.getUTCDate() + 1);
+  const toDateExclusive = exclusiveEnd.toISOString().slice(0, 10);
+
   const { data, error } = await supabase
     .from('activities')
-    .select('sport_type, moving_time_s, start_date, raw')
+    .select('sport_type, moving_time_s, raw')
     .eq('source', 'strava')
-    .gte('start_date', fromDate)
-    .lte('start_date', toDate);
+    .gte('raw->>start_date_local', fromDate)
+    .lt('raw->>start_date_local', toDateExclusive);
   if (error) throw error;
 
   const byDateSport = {};
   for (const a of data) {
     const category = SPORT_MAP[a.sport_type];
     if (!category) continue;
-    const dateStr = (a.raw?.start_date_local || a.start_date).slice(0, 10);
+    const dateStr = (a.raw?.start_date_local || '').slice(0, 10);
+    if (!dateStr) continue;
     const minutes = (a.moving_time_s || 0) / 60;
     byDateSport[dateStr] = byDateSport[dateStr] || {};
     byDateSport[dateStr][category] = (byDateSport[dateStr][category] || 0) + minutes;
