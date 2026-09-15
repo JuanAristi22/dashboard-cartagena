@@ -1467,9 +1467,17 @@ function renderWeeks(){
     const dayOrder = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
     const allBlocks = dayOrder.flatMap(d => w.days[d]||[]).filter(b=>b.sport!=='Rest');
     const total = allBlocks.length;
+    // A day with no matched-and-compliant block still counts once toward "completed" if real
+    // activity was logged that day anyway -- you trained, just not what was prescribed. Rest
+    // days and days nothing happened at all don't get credit.
     const completed = dayOrder.reduce((acc, dow) => {
       const blocks = w.days[dow] || [];
-      return acc + blocks.filter((b, i) => b.sport !== 'Rest' && blockStatus(w.n, dow, i) === 'green').length;
+      const greenCount = blocks.filter((b, i) => b.sport !== 'Rest' && blockStatus(w.n, dow, i) === 'green').length;
+      if (greenCount > 0) return acc + greenCount;
+      if (!blocks.some(b => b.sport !== 'Rest')) return acc;
+      const dateStr = dateForDow(w, dow);
+      const hasActivity = dateStr && (activitiesByDate.get(dateStr) || []).length > 0;
+      return acc + (hasActivity ? 1 : 0);
     }, 0);
     return `
     <details class="week-card">
@@ -1489,9 +1497,18 @@ function renderWeeks(){
           const isRace = blocks.some(b=>b.raceDay);
           const dateStr = dateForDow(w, dow);
           const dayActivities = dateStr ? (activitiesByDate.get(dateStr) || []) : [];
-          // TrainingPeaks-style calendar: always show what was actually logged that day
-          // alongside the plan, whether or not it matches what was scheduled.
-          const showActual = dayActivities.length > 0;
+          // TrainingPeaks-style calendar: show what was actually logged that day alongside
+          // the plan -- but only activities NOT already fully represented by a green
+          // (matched-and-compliant) planned block that day, so a session that hit its target
+          // doesn't get shown twice (once as the green block, again as an "actual" chip).
+          const greenSports = new Set(
+            blocks.filter((b,i) => b.sport!=='Rest' && blockStatus(w.n, dow, i)==='green').map(b=>b.sport)
+          );
+          const extraActivities = dayActivities.filter(a => {
+            const planKey = STRAVA_TO_PLAN_ICON[a.sport];
+            return !planKey || !greenSports.has(planKey);
+          });
+          const showActual = extraActivities.length > 0;
           return `
           <details class="day-card ${isRace?'race-day':''}">
             <summary class="day-summary">
@@ -1501,7 +1518,7 @@ function renderWeeks(){
                 ${blocks.map((b,i)=>{ const st = blockStatus(w.n, dow, i); return `
                   <span class="day-chip ${b.optional?'is-optional':''}">${st?`<span class="status-dot status-${st}"></span>`:''}${sportIcon(b.sport)}${b.sport}${b.optional?' (opt)':''} <span class="chip-time">${b.time}</span></span>
                 `;}).join('')}
-                ${showActual ? dayActivities.map(a=>{
+                ${showActual ? extraActivities.map(a=>{
                   const planKey = STRAVA_TO_PLAN_ICON[a.sport];
                   const label = planKey || a.sport;
                   const timeTxt = a.hours>0 ? `${Math.round(a.hours*60)} min` : '';
@@ -1521,7 +1538,7 @@ function renderWeeks(){
                   ${renderBlockDetail(b)}
                   ${b.notes?`<div class="block-notes"><b>Observations</b><br>${b.notes}</div>`:''}
                 </div>`;}).join('')}
-              ${showActual ? renderActualCard(dayActivities) : ''}
+              ${showActual ? renderActualCard(extraActivities) : ''}
             </div>
           </details>`;
         }).join('')}
