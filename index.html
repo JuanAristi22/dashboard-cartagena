@@ -443,9 +443,10 @@
     color:var(--muted); cursor:pointer; flex-shrink:0; text-transform:uppercase; letter-spacing:0.2px;
   }
   .send-btn svg{ width:12px; height:12px; }
-  .send-btn:hover{ border-color:var(--yellow); color:var(--yellow); }
-  .send-coros:hover{ border-color:#22D3EE; color:#22D3EE; }
-  .send-wahoo:hover{ border-color:#5FB77E; color:#5FB77E; }
+  .send-btn:not(:disabled):hover{ border-color:var(--yellow); color:var(--yellow); }
+  .send-coros:not(:disabled):hover{ border-color:#22D3EE; color:#22D3EE; }
+  .send-wahoo:not(:disabled):hover{ border-color:#5FB77E; color:#5FB77E; }
+  .send-btn:disabled{ opacity:0.4; cursor:not-allowed; }
   .block-detail{ font-size:12.5px; color:var(--muted); line-height:1.7; }
   .block-struct{ font-size:12.5px; color:var(--muted); display:flex; flex-direction:column; gap:8px; }
   .seg-block{ display:flex; flex-direction:column; gap:2px; }
@@ -1549,15 +1550,18 @@ function renderWeeks(){
     </details>`;
   }).join('');
 }
+// Coros/Wahoo device push isn't live yet -- API access is still pending approval from both
+// (requested; no credentials yet), so there's no backend for these buttons to call. Rendered
+// disabled rather than removed, so the athlete can see the integration is coming, not broken.
 function sendButton(b){
   if(b.sport==='Swim' || b.sport==='Run'){
-    return `<button class="send-btn send-coros" title="Send to Coros">
+    return `<button class="send-btn send-coros" disabled title="Coros: pending API approval">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="6" width="10" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M9 6V4h6v2M9 18v2h6v-2"/></svg>
       Coros
     </button>`;
   }
   if(b.sport==='Bike' && /simulator/i.test(b.label)){
-    return `<button class="send-btn send-wahoo" title="Send to Wahoo">
+    return `<button class="send-btn send-wahoo" disabled title="Wahoo: pending API approval">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="10" y1="19" x2="14" y2="19"/></svg>
       Wahoo
     </button>`;
