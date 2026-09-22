@@ -389,7 +389,12 @@
 
   /* ================== TRAINING PLAN ================== */
   details.week-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md); margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow); }
-  details.week-card.is-past{ border-left:3px solid var(--yellow); }
+  details.week-card.is-past > .week-summary{ background:var(--yellow); }
+  details.week-card.is-past > .week-summary .week-row1:before{ color:#000; }
+  details.week-card.is-past > .week-summary .week-title{ color:#000; }
+  details.week-card.is-past > .week-summary .week-dates{ color:rgba(0,0,0,0.65); }
+  details.week-card.is-past > .week-summary .week-metrics{ color:rgba(0,0,0,0.7); }
+  details.week-card.is-past > .week-summary .week-metrics b{ color:#000; }
   .week-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; flex-direction:column; gap:7px; }
   .week-summary::-webkit-details-marker{ display:none; }
   .week-row1{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
