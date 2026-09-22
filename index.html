@@ -389,6 +389,7 @@
 
   /* ================== TRAINING PLAN ================== */
   details.week-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-md); margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow); }
+  details.week-card.is-past{ border-left:3px solid var(--yellow); }
   .week-summary{ list-style:none; cursor:pointer; padding:14px 18px; display:flex; flex-direction:column; gap:7px; }
   .week-summary::-webkit-details-marker{ display:none; }
   .week-row1{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -1483,13 +1484,21 @@ function renderWeeks(){
       const hasActivity = dateStr && (activitiesByDate.get(dateStr) || []).length > 0;
       return acc + (hasActivity ? 1 : 0);
     }, 0);
+
+    const weekStartStr = dateForDow(w, 'MON');
+    const weekEndStr = dateForDow(w, 'SUN');
+    const isPastWeek = weekEndStr ? weekEndStr < fmt(TODAY) : false;
+    const actualHours = hoursData.reduce((acc, h) => {
+      return (weekStartStr && weekEndStr && h[0] >= weekStartStr && h[0] <= weekEndStr) ? acc + h[2] : acc;
+    }, 0);
+
     return `
-    <details class="week-card">
+    <details class="week-card ${isPastWeek?'is-past':''}">
       <summary class="week-summary">
         <div class="week-row1">
           <span class="week-title">WEEK ${w.n}<span class="week-dates">${w.dates}</span></span>
           <div class="week-metrics">
-            <span><b>${w.hours}h</b> total</span>
+            <span><b>${actualHours.toFixed(1)}/${w.hours}h</b> trained</span>
             <span><b>${completed}/${total}</b> completed</span>
           </div>
         </div>
@@ -1502,15 +1511,17 @@ function renderWeeks(){
           const dateStr = dateForDow(w, dow);
           const dayActivities = dateStr ? (activitiesByDate.get(dateStr) || []) : [];
           // TrainingPeaks-style calendar: show what was actually logged that day alongside
-          // the plan -- but only activities NOT already fully represented by a green
-          // (matched-and-compliant) planned block that day, so a session that hit its target
-          // doesn't get shown twice (once as the green block, again as an "actual" chip).
-          const greenSports = new Set(
-            blocks.filter((b,i) => b.sport!=='Rest' && blockStatus(w.n, dow, i)==='green').map(b=>b.sport)
+          // the plan -- but only activities NOT already accounted for by a matched planned
+          // block that day (green OR yellow -- yellow already means "found the matching
+          // session, just under the compliance bar," so it's the same session, not an extra
+          // one; only a block that's still red, or has no activity of its sport at all,
+          // leaves that sport's real activity unexplained and worth surfacing separately).
+          const matchedSports = new Set(
+            blocks.filter((b,i) => b.sport!=='Rest' && ['green','yellow'].includes(blockStatus(w.n, dow, i))).map(b=>b.sport)
           );
           const extraActivities = dayActivities.filter(a => {
             const planKey = STRAVA_TO_PLAN_ICON[a.sport];
-            return !planKey || !greenSports.has(planKey);
+            return !planKey || !matchedSports.has(planKey);
           });
           const showActual = extraActivities.length > 0;
           return `
