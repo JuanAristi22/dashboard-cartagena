@@ -342,6 +342,19 @@
   }
   .alert b{ color:#fff; }
 
+  .coach-card{ display:flex; gap:14px; align-items:flex-start; background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px 18px; margin-bottom:18px; }
+  .coach-card.level-alert{ border-left:3px solid var(--red); }
+  .coach-card.level-caution{ border-left:3px solid var(--magenta); }
+  .coach-card.level-normal{ border-left:3px solid var(--yellow); }
+  .coach-card.level-optimal{ border-left:3px solid var(--green); }
+  .coach-avatar{ width:42px; height:42px; flex-shrink:0; }
+  .coach-body{ flex:1; min-width:0; }
+  .coach-name{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); margin-bottom:4px; }
+  .coach-headline{ font-size:15px; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .coach-message{ font-size:13.5px; color:var(--text); opacity:0.88; line-height:1.5; margin-bottom:10px; }
+  .coach-metrics{ display:flex; gap:8px; flex-wrap:wrap; }
+  .coach-metric-chip{ font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 8px; border-radius:20px; background:var(--panel); border:1px solid var(--line); color:var(--muted); }
+
   .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
   table{ width:100%; border-collapse:collapse; font-size:13px; min-width:560px; }
   th{ text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; padding:8px 10px; border-bottom:1px solid var(--line); }
@@ -610,6 +623,8 @@
     <div class="chart-box-lg"><canvas id="heroChart"></canvas></div>
   </div>
 
+  <div class="coach-card" id="coach-card"></div>
+
   <div class="alert" id="panel-alerta">
     <b>Critical gap: zero swimming.</b> There isn't a single swim session recorded in the analyzed range. For a 70.3 with a water start, this is the first thing to fix — it's not a bike or run volume issue.
   </div>
@@ -856,6 +871,104 @@ const hoursData = toHoursData(live.activities);
 const activitiesByDate = toActivitiesByDate(live.activities);
 const whoopDaily = toWhoopDaily(live.cycles, live.recovery);
 const sleepDaily = toSleepDaily(live.sleep);
+
+// ================== COACH CANDELA ==================
+// Mirrors api/_lib/coach-tips.js -- kept as a duplicate copy here per this project's
+// no-bundler convention (same pattern as training-plan.js vs. the embedded WEEKS blob).
+// Keep both in sync by hand.
+const COACH_ICON = `<svg viewBox="0 0 24 24" fill="none">
+  <rect x="2" y="1" width="20" height="22" rx="6" fill="var(--yellow)"/>
+  <path d="M12 4c.5 2 .2 3.3-.8 4.3C9.8 9.7 9 11 9 12.5A3 3 0 0 0 12 15.5a3 3 0 0 0 3-3c0-.9-.3-1.6-.8-2.2.6.3 1.3 1.1 1.3 2.4A3.5 3.5 0 0 1 12 16.5 4.5 4.5 0 0 1 7.5 12c0-2.3 1.8-3.6 2.8-5C11 5.8 11.6 4.8 12 4z" fill="#fff"/>
+</svg>`;
+
+function coachTsbBand(tsb){
+  if (tsb > 25) return 'very_fresh';
+  if (tsb >= 5) return 'fresh';
+  if (tsb >= -10) return 'neutral';
+  if (tsb >= -30) return 'building';
+  return 'high_risk';
+}
+
+function coachSumRecentLoad(series, days){
+  return series.slice(-days).reduce((sum, r) => sum + (r.daily_load || 0), 0);
+}
+
+function getCoachAnalysis(pmcSeries, { daysLeft, phase } = {}){
+  if (!pmcSeries || !pmcSeries.length) return null;
+
+  const latest = pmcSeries[pmcSeries.length - 1];
+  const { ctl, atl, tsb } = latest;
+  const band = coachTsbBand(tsb);
+  const acwr = ctl > 0 ? Math.round((atl / ctl) * 100) / 100 : null;
+
+  const thisWeekTss = coachSumRecentLoad(pmcSeries, 7);
+  const prevWeeksSeries = pmcSeries.slice(0, -7);
+  const prevWeeksTss = coachSumRecentLoad(prevWeeksSeries, 21);
+  const avgPrevWeekTss = prevWeeksSeries.length >= 7 ? prevWeeksTss / Math.min(3, Math.floor(prevWeeksSeries.length / 7)) : null;
+  const rampPct = avgPrevWeekTss && avgPrevWeekTss > 0 ? Math.round(((thisWeekTss - avgPrevWeekTss) / avgPrevWeekTss) * 100) : null;
+
+  const metrics = { ctl, atl, tsb, band, acwr, thisWeekTss: Math.round(thisWeekTss), rampPct };
+  const inTaper = phase && /taper/i.test(phase);
+
+  if (band === 'high_risk' || (acwr != null && acwr > 1.5)) {
+    return { level:'alert', headline:'Time to back off',
+      message:`Your form (TSB ${tsb.toFixed(1)}) is deep in the red and${acwr!=null?` your ACWR is ${acwr.toFixed(2)}`:''} — this is the zone where injury and burnout happen, not where fitness gets built. Scale today's session down or take the day off entirely.`,
+      metrics };
+  }
+  if (rampPct != null && rampPct > 10 && (acwr == null || acwr > 1.3)) {
+    return { level:'caution', headline:'Loading up fast',
+      message:`This week's training load is running ${rampPct}% above your recent average. That's a sharp jump — totally fine for a planned build week, but worth a gut-check: is this the plan, or are extra sessions creeping in?`,
+      metrics };
+  }
+  if (band === 'building' && !inTaper) {
+    return { level:'normal', headline:'On track for this phase',
+      message:`TSB ${tsb.toFixed(1)} is exactly what a build block should look like — fatigue stacking on top of real fitness gains. Not a concern as long as the next recovery week lands on schedule.`,
+      metrics };
+  }
+  if (band === 'building' && inTaper) {
+    return { level:'caution', headline:'Form should be climbing by now',
+      message:`TSB is still at ${tsb.toFixed(1)} this late in the plan. Taper weeks exist to let this number rise before race day — if the next few days don't show it moving up, it's worth trimming volume further rather than adding more.`,
+      metrics };
+  }
+  if (band === 'fresh' && daysLeft != null && daysLeft <= 10) {
+    return { level:'optimal', headline:'Right where you want to be',
+      message:`TSB ${tsb.toFixed(1)} with ${daysLeft} days to go — this is the sweet spot for race day. Protect it: no new hard efforts this close in, just stay sharp.`,
+      metrics };
+  }
+  if (band === 'very_fresh') {
+    const raceWeek = daysLeft != null && daysLeft <= 10;
+    return { level: raceWeek ? 'optimal' : 'caution', headline: raceWeek ? 'Fully rested' : 'Very fresh for this point in the plan',
+      message: raceWeek
+        ? `TSB ${tsb.toFixed(1)} — fully rested and ready. If this is race week, that's exactly the plan.`
+        : `TSB ${tsb.toFixed(1)} is high for mid-plan — fine after a cutback week, but if training has felt light lately, this is also what losing fitness looks like on paper.`,
+      metrics };
+  }
+  return { level:'normal', headline:'Steady state',
+    message:`TSB ${tsb.toFixed(1)}, CTL ${ctl.toFixed(1)}, ATL ${atl.toFixed(1)} — nothing in the numbers needs attention right now. Normal, sustainable training load.`,
+    metrics };
+}
+
+function renderCoachCard(){
+  const el = document.getElementById('coach-card');
+  const coachDaysLeft = Math.round((RACE_DATE - TODAY) / 86400000);
+  const analysis = getCoachAnalysis(live.pmc, { daysLeft: coachDaysLeft, phase: coachDaysLeft <= 14 ? 'Taper' : null });
+  if (!analysis) { el.style.display = 'none'; return; }
+  const m = analysis.metrics;
+  el.className = `coach-card level-${analysis.level}`;
+  el.innerHTML = `
+    <div class="coach-avatar">${COACH_ICON}</div>
+    <div class="coach-body">
+      <div class="coach-name">Coach Candela</div>
+      <div class="coach-headline">${analysis.headline}</div>
+      <div class="coach-message">${analysis.message}</div>
+      <div class="coach-metrics">
+        <span class="coach-metric-chip">TSB ${m.tsb > 0 ? '+' : ''}${m.tsb.toFixed(1)}</span>
+        ${m.acwr != null ? `<span class="coach-metric-chip">ACWR ${m.acwr.toFixed(2)}</span>` : ''}
+        ${m.rampPct != null ? `<span class="coach-metric-chip">Weekly load ${m.rampPct > 0 ? '+' : ''}${m.rampPct}% vs avg</span>` : ''}
+      </div>
+    </div>`;
+}
+renderCoachCard();
 
 // week_n-dow-block_index -> 'green'|'yellow'|'red', recomputed by /api/sync against real Strava data.
 const PLAN_STATUS = Object.fromEntries(
